@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-bold text-wholesale-700">
-                NexusConnect
+                Cheki Hii
               </span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

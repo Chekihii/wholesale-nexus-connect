@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
@@ -9,7 +8,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">NexusConnect</h3>
+            <h3 className="text-lg font-semibold mb-4">Cheki Hii</h3>
             <p className="text-gray-300 mb-4">
               Connecting wholesalers to retailers. The premier B2B marketplace for 
               your business needs.

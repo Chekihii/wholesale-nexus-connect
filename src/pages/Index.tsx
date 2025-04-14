@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -48,7 +47,7 @@ const Index: React.FC = () => {
                 Wholesale Connections Made Simple
               </h1>
               <p className="text-lg md:text-xl mb-8">
-                Connect with trusted wholesalers, order samples, and grow your retail business with our B2B marketplace.
+                Connect with trusted wholesalers through Cheki Hii, order samples, and grow your retail business.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="bg-white text-wholesale-700 hover:bg-gray-100" asChild>
@@ -70,120 +69,12 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">Why Choose NexusConnect</h2>
-            <p className="mt-4 text-xl text-gray-600">
-              The premier B2B marketplace connecting retailers with trusted wholesalers
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-wholesale-100 w-14 h-14 flex items-center justify-center rounded-full mb-4">
-                <Package className="h-7 w-7 text-wholesale-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Sample Orders</h3>
-              <p className="text-gray-600">
-                Try before you commit with our sample ordering option on any product.
-              </p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-wholesale-100 w-14 h-14 flex items-center justify-center rounded-full mb-4">
-                <ShieldCheck className="h-7 w-7 text-wholesale-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Verified Vendors</h3>
-              <p className="text-gray-600">
-                All vendors are verified to ensure quality and reliability.
-              </p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-wholesale-100 w-14 h-14 flex items-center justify-center rounded-full mb-4">
-                <Truck className="h-7 w-7 text-wholesale-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Global Shipping</h3>
-              <p className="text-gray-600">
-                Efficient shipping solutions for businesses of all sizes.
-              </p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-wholesale-100 w-14 h-14 flex items-center justify-center rounded-full mb-4">
-                <TrendingUp className="h-7 w-7 text-wholesale-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Business Analytics</h3>
-              <p className="text-gray-600">
-                Gain insights with detailed analytics and reporting tools.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Popular Categories</h2>
-            <Link to="/categories" className="text-wholesale-600 hover:text-wholesale-700 flex items-center">
-              View All Categories <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {featuredCategories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
-            <Link to="/products" className="text-wholesale-600 hover:text-wholesale-700 flex items-center">
-              View All Products <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.slice(0, 8).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Top Vendors */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Top Vendors</h2>
-            <Link to="/vendors" className="text-wholesale-600 hover:text-wholesale-700 flex items-center">
-              View All Vendors <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredVendors.map((vendor) => (
-              <VendorCard key={vendor.id} vendor={vendor} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="bg-wholesale-700 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to grow your business?</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Join thousands of retailers and wholesalers already using NexusConnect to streamline their B2B operations.
+            Join thousands of retailers and wholesalers already using Cheki Hii to streamline their B2B operations.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" className="bg-white text-wholesale-700 hover:bg-gray-100" asChild>
