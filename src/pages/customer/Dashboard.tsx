@@ -1,19 +1,34 @@
+
 import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown, 
-  Grid2x2, List, Tag, Home, Tv, Shirt, Cosmetic, Wrench, Book, Carrot, Wine 
+  Grid2x2, List, Tag, Home, Tv, Shirt, Heart, Wrench, Book, Carrot, Wine 
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { categories, Category } from '@/data/categories';
+
+// Temporary mocked data
+const recentOrders = [
+  { id: 'ORD-1234', date: '2023-04-10', status: 'Delivered', total: 1245.99 },
+  { id: 'ORD-1235', date: '2023-04-05', status: 'Shipped', total: 568.50 },
+  { id: 'ORD-1236', date: '2023-03-29', status: 'Processing', total: 892.75 },
+];
+
+const recentlyViewed = [
+  { id: 1, name: 'Wireless Earbuds Pro', image: '', price: 89.99, minOrder: 10, vendor: 'TechPro Supplies' },
+  { id: 2, name: 'Premium Cotton T-Shirt (Pack of 5)', image: '', price: 45.50, minOrder: 20, vendor: 'Fashion Wholesale Co.' },
+  { id: 3, name: 'Smart LED Desk Lamp', image: '', price: 32.99, minOrder: 15, vendor: 'Global Home Goods' },
+  { id: 4, name: 'Stainless Steel Water Bottle', image: '', price: 18.75, minOrder: 30, vendor: 'EcoWare Solutions' },
+];
 
 const getCategoryIcon = (categoryName: string) => {
   const iconMap = {
     'Electronics': Tv,
     'Home': Home,
     'Fashion': Shirt,
-    'Beauty': Cosmetic,
+    'Beauty': Heart,
     'Textile, Fabrics & Yarns': List,
     'Motor & Bicycle Spare Parts': Wrench,
     'Construction': Tag,
@@ -25,7 +40,7 @@ const getCategoryIcon = (categoryName: string) => {
     'Beverage': Wine,
     'Machinery & Tools': Wrench,
     'Shop Supplies': Tag,
-    'Pharmaceuticals': Cosmetic,
+    'Pharmaceuticals': Heart,
     'Agro-vet': Carrot
   };
 
