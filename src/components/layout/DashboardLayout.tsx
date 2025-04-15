@@ -29,8 +29,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       <header className="bg-white border-b border-gray-200">
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-wholesale-700">
-              NexusConnect
+            <Link to="/" className="text-xl font-bold text-cheki-700">
+              Cheki Hii
             </Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -40,7 +40,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center text-sm">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-wholesale-100 text-wholesale-700">
+                  <AvatarFallback className="bg-cheki-100 text-cheki-700">
                     {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

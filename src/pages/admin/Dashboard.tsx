@@ -2,7 +2,17 @@
 import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, DollarSign, Store, Users, Activity, TrendingUp, Zap, AlertTriangle } from 'lucide-react';
+import { 
+  ShoppingBag, 
+  CreditCard, 
+  Store, 
+  Package, 
+  TrendingUp, 
+  AlertTriangle,
+  CheckCircle,
+  Truck,
+  Award
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Temporary mocked data
@@ -11,6 +21,13 @@ const platformStats = {
   totalOrders: 54892,
   vendorsCount: 1245,
   customersCount: 12458,
+}
+
+const orderStats = {
+  total: 54892,
+  readyForPickup: 245,
+  dispatched: 356,
+  delivered: 52845,
 }
 
 const revenueData = {
@@ -25,13 +42,18 @@ const newVendors = [
   { id: 3, name: 'Smart Living Inc', date: '2023-04-08', status: 'Approved' },
 ]
 
-const topCategories = [
-  { name: 'Electronics', sales: 845642.32, percentage: 26 },
-  { name: 'Apparel', sales: 654321.45, percentage: 20 },
-  { name: 'Home & Garden', sales: 524789.23, percentage: 16 },
-  { name: 'Beauty', sales: 354128.67, percentage: 11 },
-  { name: 'Sports & Outdoors', sales: 284536.12, percentage: 9 },
+const topDeals = [
+  { name: 'Smartphone Bundle', sales: 845642.32, percentage: 26, growth: 12 },
+  { name: 'Designer Apparel Collection', sales: 654321.45, percentage: 20, growth: 8 },
+  { name: 'Home Appliance Set', sales: 524789.23, percentage: 16, growth: 15 },
+  { name: 'Beauty Product Bundle', sales: 354128.67, percentage: 11, growth: 7 },
+  { name: 'Sports Equipment Package', sales: 284536.12, percentage: 9, growth: 10 },
 ]
+
+// Format currency in Kenyan Shillings
+const formatCurrency = (amount: number) => {
+  return `KSh ${amount.toLocaleString('en-KE', { maximumFractionDigits: 0 })}`;
+};
 
 const AdminDashboard: React.FC = () => {
   return (
@@ -43,13 +65,13 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="flex items-center p-6">
-              <div className="bg-wholesale-100 p-3 rounded-full">
-                <DollarSign className="h-6 w-6 text-wholesale-600" />
+              <div className="bg-cheki-100 p-3 rounded-full">
+                <CreditCard className="h-6 w-6 text-cheki-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Platform Revenue</p>
                 <h3 className="text-2xl font-bold text-gray-900">
-                  ${(platformStats.totalRevenue / 1000000).toFixed(2)}M
+                  {formatCurrency(platformStats.totalRevenue)}
                 </h3>
               </div>
             </CardContent>
@@ -63,7 +85,7 @@ const AdminDashboard: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Orders</p>
                 <h3 className="text-2xl font-bold text-gray-900">
-                  {platformStats.totalOrders.toLocaleString()}
+                  {orderStats.total.toLocaleString()}
                 </h3>
               </div>
             </CardContent>
@@ -86,12 +108,57 @@ const AdminDashboard: React.FC = () => {
           <Card>
             <CardContent className="flex items-center p-6">
               <div className="bg-purple-100 p-3 rounded-full">
-                <Users className="h-6 w-6 text-purple-600" />
+                <Package className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Customers</p>
+                <p className="text-sm font-medium text-gray-500">Products</p>
                 <h3 className="text-2xl font-bold text-gray-900">
-                  {platformStats.customersCount.toLocaleString()}
+                  {(platformStats.customersCount * 2).toLocaleString()}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Order Status Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-amber-100 p-3 rounded-full">
+                <CheckCircle className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Ready for Pickup</p>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {orderStats.readyForPickup.toLocaleString()}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Truck className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Dispatched</p>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {orderStats.dispatched.toLocaleString()}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-green-100 p-3 rounded-full">
+                <Award className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Delivered</p>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {orderStats.delivered.toLocaleString()}
                 </h3>
               </div>
             </CardContent>
@@ -102,7 +169,7 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
           <Card className="lg:col-span-4">
             <CardHeader>
-              <CardTitle>Revenue Overview</CardTitle>
+              <CardTitle>Finances</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64 flex items-center justify-center">
@@ -111,11 +178,11 @@ const AdminDashboard: React.FC = () => {
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center">
-                    <Zap className="h-6 w-6 text-wholesale-600 mr-2" />
+                    <CreditCard className="h-6 w-6 text-cheki-600 mr-2" />
                     <span className="text-sm font-medium">This Month</span>
                   </div>
                   <p className="text-2xl font-bold mt-2">
-                    ${(revenueData.thisMonth / 1000).toFixed(1)}K
+                    {formatCurrency(revenueData.thisMonth)}
                   </p>
                   <p className="text-sm text-green-600 mt-1">
                     +{revenueData.growth}% from last month
@@ -123,11 +190,11 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center">
-                    <Activity className="h-6 w-6 text-gray-600 mr-2" />
+                    <CreditCard className="h-6 w-6 text-gray-600 mr-2" />
                     <span className="text-sm font-medium">Last Month</span>
                   </div>
                   <p className="text-2xl font-bold mt-2">
-                    ${(revenueData.lastMonth / 1000).toFixed(1)}K
+                    {formatCurrency(revenueData.lastMonth)}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
                     Final revenue
@@ -156,7 +223,7 @@ const AdminDashboard: React.FC = () => {
                     <div>
                       {vendor.status === 'Pending Approval' ? (
                         <div className="space-y-2">
-                          <Button size="sm" className="w-full bg-wholesale-600 hover:bg-wholesale-700">
+                          <Button size="sm" className="w-full bg-cheki-600 hover:bg-cheki-700">
                             Approve
                           </Button>
                           <Button size="sm" variant="outline" className="w-full">
@@ -173,7 +240,7 @@ const AdminDashboard: React.FC = () => {
                 ))}
               </div>
               <div className="mt-4 text-center">
-                <a href="/admin/vendors/approvals" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
+                <a href="/admin/vendors/approvals" className="text-cheki-600 hover:text-cheki-700 text-sm font-medium">
                   View All Vendor Applications
                 </a>
               </div>
@@ -181,41 +248,44 @@ const AdminDashboard: React.FC = () => {
           </Card>
         </div>
         
-        {/* Top Categories */}
+        {/* Top Deals */}
         <Card>
-          <CardHeader>
-            <CardTitle>Top Performing Categories</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Top Deals</CardTitle>
+            <Button size="sm" variant="outline" className="text-cheki-600 border-cheki-600 hover:bg-cheki-50">
+              View All
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4">Category</th>
+                    <th className="text-left py-3 px-4">Deal Name</th>
                     <th className="text-right py-3 px-4">Sales</th>
                     <th className="text-right py-3 px-4">%</th>
                     <th className="text-right py-3 px-4">Growth</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {topCategories.map((category, index) => (
-                    <tr key={category.name} className="border-b hover:bg-gray-50">
+                  {topDeals.map((deal, index) => (
+                    <tr key={deal.name} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="flex items-center">
-                          <div className={`w-6 h-6 rounded-full mr-3 bg-wholesale-${600 - index * 100}`}></div>
-                          {category.name}
+                          <div className={`w-6 h-6 rounded-full mr-3 bg-cheki-${600 - index * 100}`}></div>
+                          {deal.name}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        ${(category.sales / 1000).toFixed(1)}K
+                        {formatCurrency(deal.sales)}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {category.percentage}%
+                        {deal.percentage}%
                       </td>
                       <td className="py-3 px-4 text-right">
                         <span className="inline-flex items-center text-green-600">
                           <TrendingUp className="h-4 w-4 mr-1" />
-                          12%
+                          {deal.growth}%
                         </span>
                       </td>
                     </tr>

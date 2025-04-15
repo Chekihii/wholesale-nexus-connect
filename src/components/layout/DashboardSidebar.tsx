@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, Users, ShoppingBag, 
   Settings, CreditCard, BarChart3, Store, 
-  FileText, Tags, Truck, MessageSquare
+  FileText, Tags, Truck, MessageSquare, TrendingUp
 } from 'lucide-react';
 
 interface SidebarLinkProps {
@@ -16,8 +16,8 @@ interface SidebarLinkProps {
 
 const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon: Icon, label, active }) => {
   const activeClass = active 
-    ? "bg-wholesale-100 text-wholesale-700" 
-    : "text-gray-600 hover:bg-wholesale-50 hover:text-wholesale-700";
+    ? "bg-cheki-100 text-cheki-700" 
+    : "text-gray-600 hover:bg-cheki-50 hover:text-cheki-700";
   
   return (
     <Link
@@ -52,10 +52,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ role }) => {
       case 'admin':
         return [
           { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-          { to: '/admin/vendors', icon: Store, label: 'Vendors' },
-          { to: '/admin/customers', icon: Users, label: 'Customers' },
           { to: '/admin/products', icon: Package, label: 'Products' },
           { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
+          { to: '/admin/vendors', icon: Store, label: 'Vendors' },
+          { to: '/admin/finances', icon: CreditCard, label: 'Finances' },
+          { to: '/admin/top-deals', icon: TrendingUp, label: 'Top Deals' },
+          { to: '/admin/customers', icon: Users, label: 'Customers' },
           { to: '/admin/categories', icon: Tags, label: 'Categories' },
           { to: '/admin/reports', icon: FileText, label: 'Reports' },
           { to: '/admin/settings', icon: Settings, label: 'Settings' },
@@ -79,7 +81,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ role }) => {
   return (
     <div className="h-full bg-white border-r border-gray-200">
       <div className="p-4">
-        <h2 className="text-xl font-bold text-wholesale-700">
+        <h2 className="text-xl font-bold text-cheki-700">
           {role === 'vendor' ? 'Vendor Portal' : role === 'admin' ? 'Admin Portal' : 'Customer Portal'}
         </h2>
       </div>

@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-wholesale-800 text-white">
+    <footer className="bg-cheki-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -55,16 +56,16 @@ export const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
-                <MapPin className="mt-1 mr-2 h-5 w-5 text-wholesale-400" />
-                <span className="text-gray-300">123 Business Ave, Suite 200<br />Metropolis, CA 90001</span>
+                <MapPin className="mt-1 mr-2 h-5 w-5 text-cheki-400" />
+                <span className="text-gray-300">Dynamic Mall - 3rd floor, ML 195<br />Kenya</span>
               </li>
               <li className="flex items-center">
-                <Phone className="mr-2 h-5 w-5 text-wholesale-400" />
-                <span className="text-gray-300">+1 (555) 123-4567</span>
+                <Phone className="mr-2 h-5 w-5 text-cheki-400" />
+                <span className="text-gray-300">+254 700 938630</span>
               </li>
               <li className="flex items-center">
-                <Mail className="mr-2 h-5 w-5 text-wholesale-400" />
-                <span className="text-gray-300">info@nexusconnect.com</span>
+                <Mail className="mr-2 h-5 w-5 text-cheki-400" />
+                <span className="text-gray-300">chekihiiii@gmail.com</span>
               </li>
             </ul>
           </div>
@@ -72,7 +73,7 @@ export const Footer: React.FC = () => {
         
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col sm:flex-row justify-between">
           <p className="text-gray-300 text-sm">
-            &copy; {new Date().getFullYear()} NexusConnect. All rights reserved.
+            &copy; {new Date().getFullYear()} Cheki Hii. All rights reserved.
           </p>
           <div className="mt-4 sm:mt-0">
             <ul className="flex space-x-4 text-sm">
