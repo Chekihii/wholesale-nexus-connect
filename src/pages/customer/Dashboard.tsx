@@ -1,23 +1,36 @@
-
 import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { 
+  ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown, 
+  Grid2x2, List, Tag, Home, Tv, Shirt, Cosmetic, Wrench, Book, Carrot, Wine 
+} from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
+import { categories, Category } from '@/data/categories';
 
-// Temporary mocked data
-const recentOrders = [
-  { id: 'ORD-1234', date: '2023-04-10', status: 'Delivered', total: 1245.99 },
-  { id: 'ORD-1235', date: '2023-04-05', status: 'Shipped', total: 568.50 },
-  { id: 'ORD-1236', date: '2023-03-29', status: 'Processing', total: 892.75 },
-];
+const getCategoryIcon = (categoryName: string) => {
+  const iconMap = {
+    'Electronics': Tv,
+    'Home': Home,
+    'Fashion': Shirt,
+    'Beauty': Cosmetic,
+    'Textile, Fabrics & Yarns': List,
+    'Motor & Bicycle Spare Parts': Wrench,
+    'Construction': Tag,
+    'Electricals': Grid2x2,
+    'Juakali': Wrench,
+    'Office & School Supplies': Book,
+    'Packaging': Package,
+    'Farm Produce': Carrot,
+    'Beverage': Wine,
+    'Machinery & Tools': Wrench,
+    'Shop Supplies': Tag,
+    'Pharmaceuticals': Cosmetic,
+    'Agro-vet': Carrot
+  };
 
-const recentlyViewed = [
-  { id: 1, name: 'Wireless Earbuds Pro', image: '', price: 89.99, minOrder: 10, vendor: 'TechPro Supplies' },
-  { id: 2, name: 'Premium Cotton T-Shirt (Pack of 5)', image: '', price: 45.50, minOrder: 20, vendor: 'Fashion Wholesale Co.' },
-  { id: 3, name: 'Smart LED Desk Lamp', image: '', price: 32.99, minOrder: 15, vendor: 'Global Home Goods' },
-  { id: 4, name: 'Stainless Steel Water Bottle', image: '', price: 18.75, minOrder: 30, vendor: 'EcoWare Solutions' },
-];
+  return iconMap[categoryName] || Tag;
+};
 
 const CustomerDashboard: React.FC = () => {
   return (
@@ -167,6 +180,29 @@ const CustomerDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Categories Section */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Browse Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {categories.map((category: Category) => {
+              const CategoryIcon = getCategoryIcon(category.name);
+              return (
+                <Card key={category.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="flex flex-col items-center p-4">
+                    <div className="bg-cheki-100 p-3 rounded-full mb-2">
+                      <CategoryIcon className="h-6 w-6 text-cheki-600" />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-900 text-center">{category.name}</h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {category.subcategories.length} subcategories
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
