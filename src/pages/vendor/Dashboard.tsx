@@ -4,8 +4,8 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
-  ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus,
-  Search, Filter, ArrowDownUp
+  ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
+  Search, Filter, ArrowDownUp, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,6 +26,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Form, 
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from '@/components/ui/form';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 // Temporary mocked data
 const recentOrders = [
@@ -33,6 +51,12 @@ const recentOrders = [
   { id: 'ORD-3253', customer: 'Downtown Styles', date: '2023-04-08', status: 'Shipped', total: 1728.50, items: 23 },
   { id: 'ORD-3252', customer: 'Metro Market', date: '2023-04-05', status: 'Delivered', total: 2492.75, items: 32 },
   { id: 'ORD-3251', customer: 'Fashion World', date: '2023-04-01', status: 'Delivered', total: 1543.20, items: 18 },
+];
+
+const pendingOrders = [
+  { id: 'ORD-3255', customer: 'City Electronics', date: '2023-04-12', total: 4320.75, items: 37 },
+  { id: 'ORD-3256', customer: 'Urban Retail Solutions', date: '2023-04-12', total: 2895.25, items: 26 },
+  { id: 'ORD-3257', customer: 'Modern Home Supplies', date: '2023-04-11', total: 1562.50, items: 18 },
 ];
 
 const topProducts = [
@@ -48,6 +72,62 @@ const lowStockProducts = [
   { id: 3, name: 'Bluetooth Speaker', stock: 7, minStock: 10 },
 ];
 
+// Product categories for dropdown
+const productCategories = [
+  { value: "electronics", label: "Electronics" },
+  { value: "clothing", label: "Clothing & Apparel" },
+  { value: "home", label: "Home & Kitchen" },
+  { value: "construction", label: "Construction Materials" },
+  { value: "textiles", label: "Textiles, Fabrics & Yarns" },
+  { value: "health", label: "Health & Beauty" }
+];
+
+// Subcategories mapping
+const productSubCategories: Record<string, { value: string, label: string }[]> = {
+  electronics: [
+    { value: "smartphones", label: "Smartphones & Accessories" },
+    { value: "computers", label: "Computers & Laptops" },
+    { value: "audio", label: "Audio Equipment" }
+  ],
+  clothing: [
+    { value: "men", label: "Men's Clothing" },
+    { value: "women", label: "Women's Clothing" },
+    { value: "children", label: "Children's Clothing" }
+  ],
+  home: [
+    { value: "furniture", label: "Furniture" },
+    { value: "appliances", label: "Appliances" },
+    { value: "decor", label: "Home Decor" }
+  ],
+  construction: [
+    { value: "sanitary", label: "Sanitary" },
+    { value: "fittings", label: "Fittings & Accessories" },
+    { value: "building", label: "Building Blocks, Sand & Ballast" }
+  ],
+  textiles: [
+    { value: "cloth", label: "Cloth Fabrics, Garments & Accessories" },
+    { value: "yarn", label: "Yarns & Threads" }
+  ],
+  health: [
+    { value: "skincare", label: "Skincare" },
+    { value: "healthcare", label: "Healthcare Products" }
+  ]
+};
+
+// Units for dropdown
+const productUnits = [
+  { value: "piece", label: "Piece" },
+  { value: "set", label: "Set" },
+  { value: "kg", label: "Kilogram (kg)" },
+  { value: "g", label: "Gram (g)" },
+  { value: "l", label: "Liter (L)" },
+  { value: "ml", label: "Milliliter (mL)" },
+  { value: "m", label: "Meter (m)" },
+  { value: "cm", label: "Centimeter (cm)" },
+  { value: "dozen", label: "Dozen" },
+  { value: "box", label: "Box" }
+];
+
 const VendorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [productOpen, setProductOpen] = useState(false);
@@ -55,6 +135,23 @@ const VendorDashboard: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [editingMoq, setEditingMoq] = useState<number | null>(null);
   const [currentMoq, setCurrentMoq] = useState<number>(0);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [productCategory, setProductCategory] = useState('');
+  const [productSubCategory, setProductSubCategory] = useState('');
+  const [productUnit, setProductUnit] = useState('');
+  const [offerDiscount, setOfferDiscount] = useState(false);
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [discountStartDate, setDiscountStartDate] = useState<Date | undefined>(undefined);
+  const [discountEndDate, setDiscountEndDate] = useState<Date | undefined>(undefined);
+  const [productImage, setProductImage] = useState<File | null>(null);
+  const [productVideo, setProductVideo] = useState<File | null>(null);
+  const [viewImagePreview, setViewImagePreview] = useState<string | null>(null);
+  
+  // Order management states
+  const [orderActionDialog, setOrderActionDialog] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [declineReason, setDeclineReason] = useState('');
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -90,13 +187,39 @@ const VendorDashboard: React.FC = () => {
   };
 
   const handleAddProduct = () => {
+    setIsEditMode(false);
+    setProductCategory('');
+    setProductSubCategory('');
+    setProductUnit('');
+    setOfferDiscount(false);
+    setDiscountPercentage(0);
+    setDiscountStartDate(undefined);
+    setDiscountEndDate(undefined);
+    setProductImage(null);
+    setProductVideo(null);
+    setProductOpen(true);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setSelectedProduct(product);
+    setIsEditMode(true);
+    // In a real app, you would populate form fields with product data
+    setProductCategory('electronics'); // Example values
+    setProductSubCategory('audio');
+    setProductUnit('piece');
+    setOfferDiscount(false);
+    setDiscountPercentage(0);
+    setDiscountStartDate(undefined);
+    setDiscountEndDate(undefined);
     setProductOpen(true);
   };
 
   const handleAddProductSubmit = () => {
+    const action = isEditMode ? "updated" : "added";
+    
     toast({
-      title: "Product Added",
-      description: "New product has been added to your inventory.",
+      title: `Product ${action}`,
+      description: `Product has been ${action} to your inventory.`,
       duration: 3000,
     });
     setProductOpen(false);
@@ -142,6 +265,52 @@ const VendorDashboard: React.FC = () => {
       duration: 3000,
     });
     // In a real app, this would apply the filter
+  };
+
+  const handlePendingOrderClick = (order: any) => {
+    setSelectedOrder(order);
+    setOrderActionDialog(true);
+  };
+
+  const handleOrderAction = (action: 'accept' | 'decline') => {
+    if (action === 'accept') {
+      toast({
+        title: "Order Accepted",
+        description: `Order ${selectedOrder.id} has been accepted.`,
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "Order Declined",
+        description: `Order ${selectedOrder.id} has been declined. Customer and admin have been notified.`,
+        duration: 3000,
+      });
+    }
+    setOrderActionDialog(false);
+    setDeclineReason('');
+    // In a real app, this would update the order status and notify the customer and admin
+  };
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: 'image' | 'video'
+  ) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      if (type === 'image') {
+        setProductImage(file);
+        // Create a preview URL for the image
+        setViewImagePreview(URL.createObjectURL(file));
+      } else {
+        setProductVideo(file);
+      }
+    }
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const category = e.target.value;
+    setProductCategory(category);
+    setProductSubCategory(''); // Reset subcategory when category changes
   };
 
   return (
@@ -254,7 +423,58 @@ const VendorDashboard: React.FC = () => {
           </Card>
         </div>
         
-        {/* Sales Overview */}
+        {/* Pending Orders */}
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-yellow-700 flex items-center">
+              <AlertTriangle className="mr-2 h-5 w-5" />
+              Pending Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-yellow-200">
+                    <th className="text-left py-3 px-4 text-yellow-700">Order ID</th>
+                    <th className="text-left py-3 px-4 text-yellow-700">Customer</th>
+                    <th className="text-right py-3 px-4 text-yellow-700">Items</th>
+                    <th className="text-right py-3 px-4 text-yellow-700">Total</th>
+                    <th className="text-right py-3 px-4 text-yellow-700">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingOrders.map((order) => (
+                    <tr key={order.id} className="border-b border-yellow-200 hover:bg-yellow-100">
+                      <td 
+                        className="py-3 px-4 text-yellow-700 cursor-pointer hover:text-yellow-900"
+                      >
+                        {order.id}
+                      </td>
+                      <td className="py-3 px-4">{order.customer}</td>
+                      <td className="py-3 px-4 text-right">{order.items}</td>
+                      <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="border-green-500 text-green-500 hover:bg-green-100"
+                            onClick={() => handlePendingOrderClick(order)}
+                          >
+                            Review
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Sales Overview & Recent Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
@@ -384,7 +604,18 @@ const VendorDashboard: React.FC = () => {
                       <td className="py-3 px-4 text-right">{product.sold}</td>
                       <td className="py-3 px-4 text-right">{formatKES(product.revenue)}</td>
                       <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end">
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditProduct(product);
+                            }}
+                          >
+                            <Edit className="h-4 w-4 text-wholesale-600" />
+                          </Button>
                           <Button 
                             variant="ghost" 
                             size="sm" 
@@ -454,13 +685,15 @@ const VendorDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Add Product Dialog */}
+      {/* Add/Edit Product Dialog */}
       <Dialog open={productOpen} onOpenChange={setProductOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
+            <DialogTitle>{isEditMode ? "Edit Product" : "Add New Product"}</DialogTitle>
             <DialogDescription>
-              Add a new product to your inventory. Fill in all the required fields.
+              {isEditMode
+                ? "Update product information in your inventory"
+                : "Add a new product to your inventory. Fill in all the required fields."}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -471,10 +704,22 @@ const VendorDashboard: React.FC = () => {
               <Input id="name" placeholder="Product name" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="description" className="text-right">
+                Description
+              </label>
+              <Input id="description" placeholder="Product description" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="price" className="text-right">
                 Price
               </label>
               <Input id="price" placeholder="0.00" type="number" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="sample-price" className="text-right">
+                Sample Price
+              </label>
+              <Input id="sample-price" placeholder="0.00" type="number" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="stock" className="text-right">
@@ -488,12 +733,240 @@ const VendorDashboard: React.FC = () => {
               </label>
               <Input id="moq" placeholder="1" type="number" className="col-span-3" />
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="unit" className="text-right">
+                Unit
+              </label>
+              <select 
+                id="unit" 
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
+                value={productUnit}
+                onChange={(e) => setProductUnit(e.target.value)}
+              >
+                <option value="">Select unit...</option>
+                {productUnits.map(unit => (
+                  <option key={unit.value} value={unit.value}>{unit.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="category" className="text-right">
+                Category
+              </label>
+              <select 
+                id="category" 
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
+                value={productCategory}
+                onChange={handleCategoryChange}
+              >
+                <option value="">Select category...</option>
+                {productCategories.map(category => (
+                  <option key={category.value} value={category.value}>{category.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="subcategory" className="text-right">
+                Sub-Category
+              </label>
+              <select 
+                id="subcategory" 
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
+                value={productSubCategory}
+                onChange={(e) => setProductSubCategory(e.target.value)}
+                disabled={!productCategory}
+              >
+                <option value="">Select sub-category...</option>
+                {productCategory && productSubCategories[productCategory]?.map(subcategory => (
+                  <option key={subcategory.value} value={subcategory.value}>{subcategory.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right">
+                Product Image
+              </label>
+              <div className="col-span-3">
+                <div className="flex items-center space-x-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => document.getElementById('product-image')?.click()}
+                  >
+                    <Image size={16} /> Upload Image
+                  </Button>
+                  <input 
+                    type="file" 
+                    id="product-image" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, 'image')} 
+                  />
+                  {(productImage || viewImagePreview) && (
+                    <div className="relative">
+                      <img 
+                        src={viewImagePreview || ''} 
+                        alt="Product preview" 
+                        className="h-12 w-12 object-cover rounded-md"
+                      />
+                      <button 
+                        type="button" 
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                        onClick={() => {
+                          setProductImage(null);
+                          setViewImagePreview(null);
+                        }}
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Max. file size: 5MB. Formats: JPG, PNG</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right">
+                Product Video
+              </label>
+              <div className="col-span-3">
+                <div className="flex items-center space-x-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => document.getElementById('product-video')?.click()}
+                  >
+                    <FileVideo size={16} /> Upload Video
+                  </Button>
+                  <input 
+                    type="file" 
+                    id="product-video" 
+                    className="hidden" 
+                    accept="video/*"
+                    onChange={(e) => handleFileChange(e, 'video')} 
+                  />
+                  {productVideo && (
+                    <span className="text-sm text-green-600">
+                      Video selected: {productVideo.name}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Max. file size: 30MB. Formats: MP4, MOV</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div className="text-right">Discount</div>
+              <div className="flex items-center space-x-2 col-span-3">
+                <Checkbox
+                  id="discount"
+                  checked={offerDiscount}
+                  onCheckedChange={(checked) => setOfferDiscount(checked === true)}
+                />
+                <label
+                  htmlFor="discount"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Offer discount on this product
+                </label>
+              </div>
+            </div>
+            {offerDiscount && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="discount-percentage" className="text-right">
+                    Discount %
+                  </label>
+                  <Input 
+                    id="discount-percentage" 
+                    placeholder="0" 
+                    type="number" 
+                    className="col-span-3"
+                    value={discountPercentage || ''}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      if (!isNaN(value) && value >= 0 && value <= 100) {
+                        setDiscountPercentage(value);
+                      }
+                    }}
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label className="text-right">
+                    Start Date
+                  </label>
+                  <div className="col-span-3">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start text-left",
+                            !discountStartDate && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {discountStartDate ? format(discountStartDate, "PPP") : <span>Pick start date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={discountStartDate}
+                          onSelect={setDiscountStartDate}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label className="text-right">
+                    End Date
+                  </label>
+                  <div className="col-span-3">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start text-left",
+                            !discountEndDate && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {discountEndDate ? format(discountEndDate, "PPP") : <span>Pick end date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={discountEndDate}
+                          onSelect={setDiscountEndDate}
+                          disabled={(date) => 
+                            discountStartDate ? date < discountStartDate : false
+                          }
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setProductOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddProductSubmit}>Add Product</Button>
+            <Button onClick={handleAddProductSubmit}>
+              {isEditMode ? "Update" : "Add"} Product
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -530,8 +1003,64 @@ const VendorDashboard: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Order Action Dialog */}
+      <Dialog open={orderActionDialog} onOpenChange={setOrderActionDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Review Order #{selectedOrder?.id}</DialogTitle>
+            <DialogDescription>
+              Review and decide whether to accept or decline this order.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="font-medium">Customer:</div>
+              <div className="col-span-2">{selectedOrder?.customer}</div>
+              
+              <div className="font-medium">Date:</div>
+              <div className="col-span-2">{selectedOrder?.date}</div>
+              
+              <div className="font-medium">Items:</div>
+              <div className="col-span-2">{selectedOrder?.items}</div>
+              
+              <div className="font-medium">Total:</div>
+              <div className="col-span-2">{selectedOrder && formatKES(selectedOrder.total)}</div>
+            </div>
+            
+            <div className="border-t pt-4 mt-2">
+              <div className="font-medium mb-2">If declining, please state reason:</div>
+              <Input
+                placeholder="Reason for declining (optional for acceptance)"
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This information will be shared with the customer and admin.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="space-x-2">
+            <Button variant="outline" onClick={() => setOrderActionDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => handleOrderAction('decline')}
+            >
+              <X className="mr-2 h-4 w-4" /> Decline Order
+            </Button>
+            <Button 
+              onClick={() => handleOrderAction('accept')}
+            >
+              <Check className="mr-2 h-4 w-4" /> Accept Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
 
 export default VendorDashboard;
+
