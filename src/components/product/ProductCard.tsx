@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Package } from 'lucide-react';
+import { formatKES } from '@/utils/currency';
 
 interface Product {
   id: number;
@@ -46,7 +47,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
         <div className="mt-2 flex justify-between items-center">
           <div>
-            <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+            <span className="font-bold text-lg">{formatKES(product.price)}</span>
             <p className="text-xs text-gray-500">Min. Order: {product.minOrder} units</p>
           </div>
         </div>
