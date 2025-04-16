@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,6 +86,14 @@ const getCategoryIcon = (categoryName: string) => {
 const CustomerDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+  // Custom tooltip formatter function
+  const CustomTooltip = (props: any) => {
+    if (props.active && props.payload && props.payload.length) {
+      return <ChartTooltipContent {...props} formatter={(value: number) => formatKES(value)} />;
+    }
+    return null;
+  };
 
   return (
     <DashboardLayout role="customer" userName="John Retailer">
@@ -331,14 +338,7 @@ const CustomerDashboard: React.FC = () => {
                 <BarChart data={monthlySpendingData}>
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value) => `${value/1000}K`} />
-                  <Tooltip 
-                    content={(props) => {
-                      if (props.active && props.payload && props.payload.length) {
-                        return <ChartTooltipContent {...props} formatter={(value) => formatKES(Number(value))} />;
-                      }
-                      return null;
-                    }}
-                  />
+                  <Tooltip content={CustomTooltip} />
                   <Legend />
                   <Bar dataKey="Electronics" fill="#4338CA" name="Electronics" />
                   <Bar dataKey="Fashion" fill="#0EA5E9" name="Fashion" />
