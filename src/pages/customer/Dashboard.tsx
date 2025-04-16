@@ -213,7 +213,7 @@ const CustomerDashboard: React.FC = () => {
                 {selectedCategory.subcategories.map((subcategory, index) => (
                   <Card key={index} className="hover:shadow-md transition-shadow">
                     <CardContent className="flex flex-col items-center p-4">
-                      <h3 className="text-sm font-medium text-gray-900 text-center">{subcategory}</h3>
+                      <h3 className="text-sm font-medium text-gray-900 text-center">{subcategory.name}</h3>
                     </CardContent>
                   </Card>
                 ))}
@@ -332,12 +332,12 @@ const CustomerDashboard: React.FC = () => {
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value) => `${value/1000}K`} />
                   <Tooltip 
-                    content={(props) => (
-                      <ChartTooltipContent 
-                        {...props} 
-                        formatter={(value) => formatKES(Number(value))} 
-                      />
-                    )} 
+                    content={(props) => {
+                      if (props.active && props.payload && props.payload.length) {
+                        return <ChartTooltipContent {...props} formatter={(value) => formatKES(Number(value))} />;
+                      }
+                      return null;
+                    }}
                   />
                   <Legend />
                   <Bar dataKey="Electronics" fill="#4338CA" name="Electronics" />
