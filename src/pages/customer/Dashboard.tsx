@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import {
   ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown, 
   Grid2x2, List, Tag, Home, Tv, Shirt, Heart, Wrench, Book, Carrot, Wine,
   Search, Settings, ArrowDownUp, MapPin, Star, CheckCircle, Filter,
-  ChevronRight
+  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { categories, Category } from '@/data/categories';
@@ -32,8 +33,10 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
+import { useToast } from '@/components/ui/use-toast';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useNavigate, Link } from 'react-router-dom';
 
 // Temporary mocked data
 const recentOrders = [
@@ -49,6 +52,14 @@ const recentlyViewed = [
   { id: 4, name: 'Stainless Steel Water Bottle', image: '', price: 1875, minOrder: 30, vendor: 'EcoWare Solutions' },
   { id: 5, name: 'Bluetooth Speaker', image: '', price: 6500, minOrder: 5, vendor: 'Audio Solutions Ltd' },
   { id: 6, name: 'Office Chair', image: '', price: 12000, minOrder: 2, vendor: 'Office Depot Kenya' },
+];
+
+// Top Deals data
+const topDeals = [
+  { id: 7, name: 'Premium Bluetooth Headphones', image: '', price: 7500, minOrder: 5, vendor: 'Audio Tech Ltd', discount: '20%' },
+  { id: 8, name: 'Ergonomic Office Chair', image: '', price: 15000, minOrder: 2, vendor: 'Office Solutions', discount: '15%' },
+  { id: 9, name: 'Smart Home Security System', image: '', price: 22000, minOrder: 1, vendor: 'SecureTech', discount: '25%' },
+  { id: 10, name: 'Professional Blender Set', image: '', price: 8500, minOrder: 3, vendor: 'Kitchen Essentials', discount: '10%' },
 ];
 
 // Chart data for monthly spending by category
@@ -86,6 +97,9 @@ const getCategoryIcon = (categoryName: string) => {
 const CustomerDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [searchType, setSearchType] = useState<'products' | 'vendors'>('products');
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Custom tooltip formatter function
   const CustomTooltip = (props: any) => {
@@ -95,56 +109,144 @@ const CustomerDashboard: React.FC = () => {
     return null;
   };
 
+  const handleRepeatOrder = (orderId: string) => {
+    toast({
+      title: "Order Being Repeated",
+      description: `Adding items from order ${orderId} to your cart.`,
+      duration: 3000,
+    });
+    // In a real app, this would fetch the order items and add them to cart
+  };
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    
+    toast({
+      title: `Searching for ${searchType}`,
+      description: `Results for: "${searchQuery}"`,
+      duration: 3000,
+    });
+    // In a real app, this would redirect to search results page
+  };
+
+  const handleFilterClick = (filterType: string) => {
+    toast({
+      title: "Filter Applied",
+      description: `Products now sorted by: ${filterType}`,
+      duration: 3000,
+    });
+    // In a real app, this would apply the filter
+  };
+
+  const handleTaskbarClick = (action: string) => {
+    switch (action) {
+      case 'home':
+        navigate('/');
+        break;
+      case 'cart':
+        navigate('/cart');
+        break;
+      case 'categories':
+        // Toggle category view
+        break;
+      case 'search':
+        // Focus search input
+        const searchInput = document.querySelector('input[placeholder="Search products..."]');
+        if (searchInput instanceof HTMLInputElement) {
+          searchInput.focus();
+        }
+        break;
+      case 'profile':
+        navigate('/profile');
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <DashboardLayout role="customer" userName="John Retailer">
       <div className="space-y-6">
         {/* Search and Filter Bar */}
         <div className="flex justify-between items-center">
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+              size={18} 
+            />
             <Input 
               placeholder="Search products..." 
               className="pl-10" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch();
+              }}
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-2">
-                <Filter size={16} className="mr-2" /> Filter
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <ArrowDownUp size={16} className="mr-2" /> Price: Low to High
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-2">
+                  {searchType === 'products' ? 'Products' : 'Vendors'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setSearchType('products')}>
+                  Products
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ArrowDownUp size={16} className="mr-2 rotate-180" /> Price: High to Low
+                <DropdownMenuItem onClick={() => setSearchType('vendors')}>
+                  Vendors
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <MapPin size={16} className="mr-2" /> Within 30 KM
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Package size={16} className="mr-2" /> Lowest MOQ First
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Package size={16} className="mr-2" /> Highest MOQ First
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Star size={16} className="mr-2" /> Highest Rated
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <CheckCircle size={16} className="mr-2" /> Verified Vendors
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button 
+              variant="default" 
+              className="bg-wholesale-600 hover:bg-wholesale-700"
+              onClick={handleSearch}
+            >
+              <Search size={16} className="mr-2" /> Search
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Filter size={16} className="mr-2" /> Filter
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => handleFilterClick('Price: Low to High')}>
+                    <ArrowDownUp size={16} className="mr-2" /> Price: Low to High
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterClick('Price: High to Low')}>
+                    <ArrowDownUp size={16} className="mr-2 rotate-180" /> Price: High to Low
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleFilterClick('Within 30 KM')}>
+                    <MapPin size={16} className="mr-2" /> Within 30 KM
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleFilterClick('Lowest MOQ First')}>
+                    <Package size={16} className="mr-2" /> Lowest MOQ First
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterClick('Highest MOQ First')}>
+                    <Package size={16} className="mr-2" /> Highest MOQ First
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleFilterClick('Highest Rated Vendor')}>
+                    <Star size={16} className="mr-2" /> Highest Rated Vendor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterClick('Highest Rated Product')}>
+                    <Star size={16} className="mr-2" /> Highest Rated Product
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleFilterClick('Verified Vendors')}>
+                    <CheckCircle size={16} className="mr-2" /> Verified Vendors
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         
         {/* Stats Overview */}
@@ -217,8 +319,19 @@ const CustomerDashboard: React.FC = () => {
                 <span className="text-lg font-medium">{selectedCategory.name}</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {selectedCategory.subcategories.map((subcategory, index) => (
-                  <Card key={index} className="hover:shadow-md transition-shadow">
+                {selectedCategory.subcategories.map((subcategory) => (
+                  <Card 
+                    key={subcategory.id} 
+                    className="hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => {
+                      toast({
+                        title: "Subcategory Selected",
+                        description: `Browsing products in ${subcategory.name}`,
+                        duration: 3000,
+                      });
+                      // In a real app, this would navigate to subcategory page
+                    }}
+                  >
                     <CardContent className="flex flex-col items-center p-4">
                       <h3 className="text-sm font-medium text-gray-900 text-center">{subcategory.name}</h3>
                     </CardContent>
@@ -253,6 +366,36 @@ const CustomerDashboard: React.FC = () => {
           )}
         </div>
         
+        {/* Top Deals */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <Sparkles className="h-5 w-5 text-amber-500 mr-2" /> Top Deals
+            </h2>
+            <Link to="/deals" className="text-wholesale-600 hover:underline text-sm font-medium">
+              View All Deals
+            </Link>
+          </div>
+          <Carousel className="w-full">
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {topDeals.map((product) => (
+                <CarouselItem key={product.id} className="pl-2 md:pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <div className="relative">
+                    <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-full">
+                      {product.discount} OFF
+                    </div>
+                    <ProductCard product={product} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="flex justify-end gap-2 mt-2">
+              <CarouselPrevious className="static translate-y-0 ml-0" />
+              <CarouselNext className="static translate-y-0 mr-0" />
+            </div>
+          </Carousel>
+        </div>
+        
         {/* Recently Viewed Products - Horizontal Scroll */}
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Recently Viewed Products</h2>
@@ -271,53 +414,90 @@ const CustomerDashboard: React.FC = () => {
           </Carousel>
         </div>
         
-        {/* Recent Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Order ID</th>
-                    <th className="text-left py-3 px-4">Date</th>
-                    <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-right py-3 px-4">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <a href={`/order/${order.id}`} className="text-wholesale-600 hover:underline">
-                          {order.id}
-                        </a>
-                      </td>
-                      <td className="py-3 px-4">{order.date}</td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
+        {/* Recent Orders & Repeat Order */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Orders */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Orders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Order ID</th>
+                      <th className="text-left py-3 px-4">Date</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                      <th className="text-right py-3 px-4">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 text-center">
-              <a href="/orders" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
-                View All Orders
-              </a>
-            </div>
-          </CardContent>
-        </Card>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => (
+                      <tr key={order.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <a href={`/order/${order.id}`} className="text-wholesale-600 hover:underline">
+                            {order.id}
+                          </a>
+                        </td>
+                        <td className="py-3 px-4">{order.date}</td>
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 text-center">
+                <a href="/orders" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
+                  View All Orders
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Repeat Order Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Repeat className="h-5 w-5 mr-2 text-wholesale-600" /> Repeat Order
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Quickly reorder items from your previous orders without having to search for products again.
+              </p>
+              <div className="space-y-4">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium">{order.id}</p>
+                        <p className="text-sm text-gray-500">{order.date} • {formatKES(order.total)}</p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleRepeatOrder(order.id)}
+                        className="bg-wholesale-600 hover:bg-wholesale-700"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Repeat
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
         {/* Monthly Spending - Now at the bottom with actual chart */}
         <Card>
@@ -374,25 +554,45 @@ const CustomerDashboard: React.FC = () => {
       </div>
       
       {/* Fixed Taskbar at the bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 md:hidden z-50">
         <div className="flex justify-around items-center h-16">
-          <Button variant="ghost" className="flex flex-col items-center justify-center h-full rounded-none">
+          <Button 
+            variant="ghost" 
+            className="flex flex-col items-center justify-center h-full rounded-none"
+            onClick={() => handleTaskbarClick('home')}
+          >
             <Home className="h-5 w-5" />
             <span className="text-xs mt-1">Home</span>
           </Button>
-          <Button variant="ghost" className="flex flex-col items-center justify-center h-full rounded-none">
+          <Button 
+            variant="ghost" 
+            className="flex flex-col items-center justify-center h-full rounded-none"
+            onClick={() => handleTaskbarClick('cart')}
+          >
             <ShoppingBag className="h-5 w-5" />
             <span className="text-xs mt-1">Cart</span>
           </Button>
-          <Button variant="ghost" className="flex flex-col items-center justify-center h-full rounded-none">
+          <Button 
+            variant="ghost" 
+            className="flex flex-col items-center justify-center h-full rounded-none"
+            onClick={() => handleTaskbarClick('categories')}
+          >
             <Grid2x2 className="h-5 w-5" />
             <span className="text-xs mt-1">Categories</span>
           </Button>
-          <Button variant="ghost" className="flex flex-col items-center justify-center h-full rounded-none">
+          <Button 
+            variant="ghost" 
+            className="flex flex-col items-center justify-center h-full rounded-none"
+            onClick={() => handleTaskbarClick('search')}
+          >
             <Search className="h-5 w-5" />
             <span className="text-xs mt-1">Search</span>
           </Button>
-          <Button variant="ghost" className="flex flex-col items-center justify-center h-full rounded-none">
+          <Button 
+            variant="ghost" 
+            className="flex flex-col items-center justify-center h-full rounded-none"
+            onClick={() => handleTaskbarClick('profile')}
+          >
             <Settings className="h-5 w-5" />
             <span className="text-xs mt-1">Profile</span>
           </Button>

@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X, User, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,43 @@ export const Header: React.FC<HeaderProps> = ({
   cartItems = 0 
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Mock notifications
+  const notifications = [
+    { id: 1, message: 'Your order ORD-1234 has been shipped', time: '10 minutes ago', isNew: true },
+    { id: 2, message: 'New product recommendation based on your purchase history', time: '1 hour ago', isNew: true },
+    { id: 3, message: 'Price drop on items in your wishlist', time: '5 hours ago', isNew: false },
+    { id: 4, message: 'Your order ORD-1233 has been delivered', time: '1 day ago', isNew: false },
+  ];
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    if (!searchQuery.trim()) return;
+    
+    toast({
+      title: "Search",
+      description: `Searching for: "${searchQuery}"`,
+      duration: 3000,
+    });
+    
+    // In a real app, this would navigate to search results page
+    // navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  };
+
+  const handleNotificationClick = (notificationId: number) => {
+    toast({
+      title: "Notification",
+      description: "Viewing notification details",
+      duration: 3000,
+    });
+    // In a real app, this would mark notification as read and navigate if needed
+  };
 
   return (
     <header className="bg-white shadow-sm">
@@ -59,14 +97,18 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input 
                 type="text" 
                 placeholder="Search products..." 
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-wholesale-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+              <button type="submit">
+                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </button>
+            </form>
             
             {!userRole ? (
               <div className="flex items-center space-x-2">
@@ -79,6 +121,45 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             ) : (
               <div className="flex items-center space-x-4">
+                {/* Notifications dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative p-2">
+                      <Bell className="h-5 w-5 text-gray-600" />
+                      {notifications.filter(n => n.isNew).length > 0 && (
+                        <Badge className="absolute -top-1 -right-1 bg-red-500 h-4 w-4 flex items-center justify-center p-0">
+                          {notifications.filter(n => n.isNew).length}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80">
+                    <DropdownMenuLabel className="flex justify-between">
+                      <span>Notifications</span>
+                      <Link to="/notifications" className="text-xs text-wholesale-600 hover:underline">
+                        View All
+                      </Link>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {notifications.length > 0 ? (
+                      notifications.map((notification) => (
+                        <DropdownMenuItem 
+                          key={notification.id}
+                          className={`p-3 ${notification.isNew ? 'bg-blue-50' : ''}`}
+                          onClick={() => handleNotificationClick(notification.id)}
+                        >
+                          <div className="flex flex-col w-full">
+                            <p className="text-sm font-medium">{notification.message}</p>
+                            <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                          </div>
+                        </DropdownMenuItem>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-500">No notifications</div>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 {userRole === 'customer' && (
                   <Link to="/cart" className="relative">
                     <ShoppingCart className="h-6 w-6 text-gray-600 hover:text-wholesale-600" />
@@ -176,6 +257,22 @@ export const Header: React.FC<HeaderProps> = ({
               </Link>
             )}
           </div>
+          
+          <form onSubmit={handleSearch} className="px-4 pt-2 pb-4">
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-wholesale-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="submit">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </button>
+            </div>
+          </form>
+          
           <div className="pt-4 pb-3 border-t border-gray-200">
             {!userRole ? (
               <div className="flex items-center px-4 space-x-2">
@@ -210,6 +307,12 @@ export const Header: React.FC<HeaderProps> = ({
                     </Link>
                   </>
                 )}
+                <Link
+                  to="/notifications"
+                  className="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100"
+                >
+                  Notifications
+                </Link>
                 <Link
                   to="/logout"
                   className="block px-4 py-2 text-base font-medium text-red-500 hover:bg-gray-100"

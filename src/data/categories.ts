@@ -86,7 +86,7 @@ export const categories: Category[] = [
     id: "textile",
     name: "Textile, Fabrics & Yarns",
     subcategories: [
-      { id: "cloth", name: "Cloth fabrics, garments & Accessories" },
+      { id: "cloth", name: "Cloth Fabrics, Garments & Accessories" },
       { id: "sofa", name: "Sofa materials & Accessories" },
       { id: "yarns", name: "Yarns & Tools" },
       { id: "machines", name: "Sewing Machines" }
@@ -112,13 +112,15 @@ export const categories: Category[] = [
     id: "construction",
     name: "Construction",
     subcategories: [
+      { id: "blocks", name: "Building Blocks, Sand & Ballast" },
       { id: "boards", name: "Boards" },
       { id: "ceiling", name: "Ceiling" },
       { id: "doors", name: "Doors & Locks" },
       { id: "glazing", name: "Glazing" },
       { id: "paint", name: "Paint & Tools" },
       { id: "plumbing", name: "Plumbing" },
-      { id: "sanitary", name: "Sanitary Fittings & Accessories" }
+      { id: "sanitary", name: "Sanitary" },
+      { id: "fittings", name: "Fittings & Accessories" }
     ]
   },
   {
