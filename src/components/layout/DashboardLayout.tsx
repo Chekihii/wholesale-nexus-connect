@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardSidebar } from './DashboardSidebar';
 import { Bell, User, LogOut, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -28,9 +28,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   role,
   userName = 'User'
 }) => {
-  const [logoDialogOpen, setLogoDialogOpen] = React.useState(false);
-  const [logoFile, setLogoFile] = React.useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
+  const [logoDialogOpen, setLogoDialogOpen] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { toast } = useToast();
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,9 +52,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     setLogoDialogOpen(false);
   };
 
+  const toggleNotifications = () => {
+    setNotificationsOpen(!notificationsOpen);
+    if (!notificationsOpen) {
+      toast({
+        title: "Notifications",
+        description: `You have new notifications`,
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200 z-30">
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center">
             <Link to="/" className="text-xl font-bold text-cheki-700">
@@ -74,8 +86,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </Avatar>
               </div>
             )}
-            <button className="p-2 text-gray-500 hover:text-gray-700">
+            <button 
+              className="p-2 text-gray-500 hover:text-gray-700 relative"
+              onClick={toggleNotifications}
+            >
               <Bell className="h-5 w-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center text-sm">
@@ -114,6 +130,35 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <DashboardSidebar role={role} />
         </aside>
         <main className="flex-grow overflow-auto bg-gray-50 p-6">
+          {notificationsOpen && (
+            <div className="fixed top-16 right-4 w-80 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+              <div className="p-3 border-b border-gray-200">
+                <h3 className="font-semibold">Notifications</h3>
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                <div className="p-3 border-b border-gray-100 hover:bg-gray-50">
+                  <p className="font-medium text-sm">New Order</p>
+                  <p className="text-sm text-gray-500">Order #12345 has been placed</p>
+                  <p className="text-xs text-gray-400 mt-1">30 minutes ago</p>
+                </div>
+                <div className="p-3 border-b border-gray-100 hover:bg-gray-50">
+                  <p className="font-medium text-sm">Payment Confirmed</p>
+                  <p className="text-sm text-gray-500">Payment for order #12340 received</p>
+                  <p className="text-xs text-gray-400 mt-1">2 hours ago</p>
+                </div>
+                <div className="p-3 hover:bg-gray-50">
+                  <p className="font-medium text-sm">Product Stock Alert</p>
+                  <p className="text-sm text-gray-500">Bluetooth Earbuds are running low</p>
+                  <p className="text-xs text-gray-400 mt-1">1 day ago</p>
+                </div>
+              </div>
+              <div className="p-2 border-t border-gray-200">
+                <Button variant="ghost" size="sm" className="w-full text-sm">
+                  View all notifications
+                </Button>
+              </div>
+            </div>
+          )}
           {children}
         </main>
       </div>

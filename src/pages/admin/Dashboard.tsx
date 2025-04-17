@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,18 +11,15 @@ import {
   CheckCircle,
   Truck,
   Award,
-  Search,
-  Filter,
   Plus,
   Trash2,
   Edit,
   Sparkles,
   Users,
   ShoppingCart,
-  MoreVertical
+  MoreVertical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { formatKES } from '@/utils/currency';
 import { Link, useNavigate } from 'react-router-dom';
@@ -49,6 +45,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
 // Temporary mocked data
 const platformStats = {
@@ -85,7 +82,6 @@ const topDeals = [
   { id: 5, name: 'Sports Equipment Package', sales: 284536.12, percentage: 9, growth: 10, featured: false },
 ]
 
-// Vendor products
 const vendorProducts = [
   { id: 101, name: 'Bluetooth Earbuds', vendor: 'AudioTech Inc', price: 2999.99, category: 'Electronics', status: 'Active' },
   { id: 102, name: 'Cotton T-Shirts (5-pack)', vendor: 'Fashion World', price: 1499.99, category: 'Fashion', status: 'Active' },
@@ -94,7 +90,6 @@ const vendorProducts = [
   { id: 105, name: 'Organic Face Cream', vendor: 'Natural Beauty', price: 1299.99, category: 'Beauty', status: 'Inactive' },
 ]
 
-// Customer orders
 const customerOrders = [
   { id: 'ORD-5678', customer: 'Jane Doe', vendor: 'TechGadgets Ltd', items: 3, total: 8999.97, date: '2023-04-12', status: 'Processing' },
   { id: 'ORD-5679', customer: 'John Smith', vendor: 'Fashion World', items: 2, total: 2999.98, date: '2023-04-11', status: 'Shipped' },
@@ -109,6 +104,7 @@ const AdminDashboard: React.FC = () => {
   const [vendorApprovalOpen, setVendorApprovalOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -121,6 +117,17 @@ const AdminDashboard: React.FC = () => {
       duration: 3000,
     });
     // In a real app, this would filter the content
+  };
+
+  const toggleNotifications = () => {
+    setNotificationsOpen(!notificationsOpen);
+    if (!notificationsOpen) {
+      toast({
+        title: "Notifications",
+        description: "You have 3 unread notifications",
+        duration: 3000,
+      });
+    }
   };
 
   const handleAddDeal = () => {
@@ -221,34 +228,30 @@ const AdminDashboard: React.FC = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="flex space-x-2">
+          <div className="flex items-center">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <Input 
-                placeholder="Search..." 
-                className="pl-10 w-64" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSearch();
-                }}
-              />
+              <Button 
+                variant="ghost"
+                size="icon"
+                onClick={toggleNotifications}
+                className="relative"
+              >
+                <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></div>
+                <AlertTriangle className="h-5 w-5" />
+              </Button>
             </div>
-            <Button onClick={handleSearch}>Search</Button>
           </div>
         </div>
 
-        {/* Dashboard Tabs */}
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="vendors">Vendors & Deals</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsList className="grid grid-cols-4 mb-4 h-12">
+            <TabsTrigger value="overview" className="text-base font-medium">Overview</TabsTrigger>
+            <TabsTrigger value="vendors" className="text-base font-medium">Top Deals</TabsTrigger>
+            <TabsTrigger value="products" className="text-base font-medium">Products</TabsTrigger>
+            <TabsTrigger value="orders" className="text-base font-medium">Orders</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6">
-            {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="flex items-center p-6">
@@ -307,7 +310,6 @@ const AdminDashboard: React.FC = () => {
               </Card>
             </div>
             
-            {/* Order Status Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="flex items-center p-6">
@@ -352,7 +354,6 @@ const AdminDashboard: React.FC = () => {
               </Card>
             </div>
             
-            {/* Revenue Overview & Vendor Approvals */}
             <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
               <Card className="lg:col-span-4">
                 <CardHeader>
@@ -391,7 +392,6 @@ const AdminDashboard: React.FC = () => {
                 </CardContent>
               </Card>
               
-              {/* Vendor Approvals */}
               <Card className="lg:col-span-3">
                 <CardHeader>
                   <CardTitle>Vendor Approvals</CardTitle>
@@ -444,7 +444,6 @@ const AdminDashboard: React.FC = () => {
               </Card>
             </div>
             
-            {/* System Alerts */}
             <Card className="border-amber-200 bg-amber-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-amber-700 flex items-center">
@@ -482,7 +481,6 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="vendors" className="space-y-6">
-            {/* Top Deals Management */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center">
@@ -537,23 +535,22 @@ const AdminDashboard: React.FC = () => {
                             }
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <div className="flex justify-end space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8 w-8 p-0"
-                                onClick={() => handleEditDeal(deal)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50"
-                                onClick={() => handleDeleteDeal(deal)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            <div className="flex justify-end">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditDeal(deal)}>
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDeleteDeal(deal)}>
+                                    Remove
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </td>
                         </tr>
@@ -572,67 +569,9 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Vendor Management */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Store className="h-5 w-5 mr-2" /> Vendor Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4">Vendor</th>
-                        <th className="text-right py-3 px-4">Products</th>
-                        <th className="text-right py-3 px-4">Revenue</th>
-                        <th className="text-right py-3 px-4">Last Active</th>
-                        <th className="text-right py-3 px-4">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.from({length: 5}, (_, i) => ({
-                        id: i + 1,
-                        name: `Vendor ${i + 1}`,
-                        products: Math.floor(Math.random() * 100) + 10,
-                        revenue: Math.floor(Math.random() * 1000000) + 100000,
-                        lastActive: '2023-04-' + (10 - i),
-                        status: i === 0 ? 'Pending' : 'Active'
-                      })).map((vendor) => (
-                        <tr key={vendor.id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center">
-                              <Avatar className="h-8 w-8 mr-2">
-                                <AvatarFallback className="bg-cheki-100 text-cheki-700">
-                                  {vendor.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {vendor.name}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-right">{vendor.products}</td>
-                          <td className="py-3 px-4 text-right">{formatKES(vendor.revenue)}</td>
-                          <td className="py-3 px-4 text-right">{vendor.lastActive}</td>
-                          <td className="py-3 px-4 text-right">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              vendor.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {vendor.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="products" className="space-y-6">
-            {/* Products Management */}
             <Card>
               <CardHeader>
                 <CardTitle>Products Management</CardTitle>
@@ -705,7 +644,6 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">
-            {/* Customer Orders */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -785,7 +723,6 @@ const AdminDashboard: React.FC = () => {
         </Tabs>
       </div>
 
-      {/* Add/Edit Deal Dialog */}
       <Dialog open={dealDialogOpen} onOpenChange={setDealDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -844,7 +781,6 @@ const AdminDashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Vendor Rejection Dialog */}
       <Dialog open={vendorApprovalOpen} onOpenChange={setVendorApprovalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -872,6 +808,36 @@ const AdminDashboard: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {notificationsOpen && (
+        <div className="fixed top-16 right-4 w-80 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+          <div className="p-3 border-b border-gray-200">
+            <h3 className="font-semibold">Notifications</h3>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            <div className="p-3 border-b border-gray-100 hover:bg-gray-50">
+              <p className="font-medium text-sm">Payment gateway alert</p>
+              <p className="text-sm text-gray-500">3 failed transactions detected</p>
+              <p className="text-xs text-gray-400 mt-1">10 minutes ago</p>
+            </div>
+            <div className="p-3 border-b border-gray-100 hover:bg-gray-50">
+              <p className="font-medium text-sm">New vendor application</p>
+              <p className="text-sm text-gray-500">TechGadgets Ltd has applied</p>
+              <p className="text-xs text-gray-400 mt-1">1 hour ago</p>
+            </div>
+            <div className="p-3 hover:bg-gray-50">
+              <p className="font-medium text-sm">Server load high</p>
+              <p className="text-sm text-gray-500">Server load reached 85% capacity</p>
+              <p className="text-xs text-gray-400 mt-1">2 hours ago</p>
+            </div>
+          </div>
+          <div className="p-2 border-t border-gray-200">
+            <Button variant="ghost" size="sm" className="w-full text-sm">
+              View all notifications
+            </Button>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

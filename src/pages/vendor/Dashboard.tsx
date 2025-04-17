@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
+  ShoppingBag, 
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
   Search, ChartBar, LayoutDashboard, Package, Wallet, User, Bell, Calendar
 } from 'lucide-react';
@@ -46,60 +46,55 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+// Mock data for the vendor dashboard
+const revenueStats = {
+  totalRevenue: 1245678.45,
+  pendingPayouts: 234567.89,
+  totalOrders: 1245,
+  totalProducts: 56,
+};
+
 const recentOrders = [
-  { id: 'ORD-3254', customer: 'Urban Retailers Inc.', date: '2023-04-10', status: 'Processing', total: 3450.99, items: 45 },
-  { id: 'ORD-3253', customer: 'Downtown Styles', date: '2023-04-08', status: 'Shipped', total: 1728.50, items: 23 },
-  { id: 'ORD-3252', customer: 'Metro Market', date: '2023-04-05', status: 'Delivered', total: 2492.75, items: 32 },
-  { id: 'ORD-3251', customer: 'Fashion World', date: '2023-04-01', status: 'Delivered', total: 1543.20, items: 18 },
+  { id: 'ORD-1234', customer: 'John Doe', date: '2023-04-12', total: 12500.00, status: 'Processing' },
+  { id: 'ORD-1235', customer: 'Jane Smith', date: '2023-04-11', total: 8750.50, status: 'Shipped' },
+  { id: 'ORD-1236', customer: 'Robert Johnson', date: '2023-04-10', total: 5400.75, status: 'Delivered' },
+  { id: 'ORD-1237', customer: 'Emily Davis', date: '2023-04-09', total: 3200.25, status: 'Delivered' },
 ];
 
-const pendingOrders = [
-  { id: 'ORD-3255', customer: 'City Electronics', date: '2023-04-12', total: 4320.75, items: 37 },
-  { id: 'ORD-3256', customer: 'Urban Retail Solutions', date: '2023-04-12', total: 2895.25, items: 26 },
-  { id: 'ORD-3257', customer: 'Modern Home Supplies', date: '2023-04-11', total: 1562.50, items: 18 },
+const products = [
+  { id: 1, name: 'Bluetooth Earbuds', price: 2999.99, stock: 45, category: 'Electronics', status: 'Active' },
+  { id: 2, name: 'Wireless Mouse', price: 1499.99, stock: 30, category: 'Electronics', status: 'Active' },
+  { id: 3, name: 'USB-C Cable (2m)', price: 899.99, stock: 100, category: 'Accessories', status: 'Active' },
+  { id: 4, name: 'Laptop Stand', price: 1999.99, stock: 15, category: 'Accessories', status: 'Active' },
+  { id: 5, name: 'External SSD 1TB', price: 8999.99, stock: 8, category: 'Storage', status: 'Low Stock' },
+  { id: 6, name: 'Mechanical Keyboard', price: 5499.99, stock: 0, category: 'Electronics', status: 'Out of Stock' },
 ];
 
-const topProducts = [
-  { id: 1, name: 'Wireless Earbuds Pro', sold: 238, revenue: 21419.62, moq: 10 },
-  { id: 2, name: 'Premium Cotton T-Shirt (Pack of 5)', sold: 192, revenue: 8736.00, moq: 5 },
-  { id: 3, name: 'Smart LED Desk Lamp', sold: 147, revenue: 4849.53, moq: 3 },
-  { id: 4, name: 'Stainless Steel Water Bottle', sold: 125, revenue: 2343.75, moq: 8 },
-];
-
-const lowStockProducts = [
-  { id: 1, name: 'Wireless Earbuds Pro', stock: 8, minStock: 10 },
-  { id: 2, name: 'Designer Sunglasses', stock: 3, minStock: 5 },
-  { id: 3, name: 'Bluetooth Speaker', stock: 7, minStock: 10 },
+const ordersByMonth = [
+  { month: 'Jan', orders: 45 },
+  { month: 'Feb', orders: 52 },
+  { month: 'Mar', orders: 49 },
+  { month: 'Apr', orders: 62 },
+  { month: 'May', orders: 87 },
+  { month: 'Jun', orders: 75 },
 ];
 
 const VendorDashboard: React.FC = () => {
+  const [activeView, setActiveView] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
-  const [productOpen, setProductOpen] = useState(false);
-  const [moqDialogOpen, setMoqDialogOpen] = useState(false);
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+  const [editProductDialogOpen, setEditProductDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [editingMoq, setEditingMoq] = useState<number | null>(null);
-  const [currentMoq, setCurrentMoq] = useState<number>(0);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [productName, setProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [productStock, setProductStock] = useState('');
   const [productCategory, setProductCategory] = useState('');
-  const [productSubCategory, setProductSubCategory] = useState('');
-  const [productUnit, setProductUnit] = useState('');
-  const [offerDiscount, setOfferDiscount] = useState(false);
-  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
-  const [discountStartDate, setDiscountStartDate] = useState<Date | undefined>(undefined);
-  const [discountEndDate, setDiscountEndDate] = useState<Date | undefined>(undefined);
-  const [productImage, setProductImage] = useState<File | null>(null);
+  const [productDescription, setProductDescription] = useState('');
+  const [productImages, setProductImages] = useState<File[]>([]);
   const [productVideo, setProductVideo] = useState<File | null>(null);
-  const [viewImagePreview, setViewImagePreview] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [orderActionDialog, setOrderActionDialog] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [declineReason, setDeclineReason] = useState('');
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "New order received (ORD-3257)", time: "10 minutes ago", read: false },
-    { id: 2, message: "Your product 'Wireless Earbuds Pro' is low in stock", time: "1 hour ago", read: false },
-    { id: 3, message: "Payment confirmed for order ORD-3254", time: "3 hours ago", read: true }
-  ]);
+  const [productFeatured, setProductFeatured] = useState(false);
+  const [date, setDate] = React.useState<Date>();
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -108,525 +103,76 @@ const VendorDashboard: React.FC = () => {
     if (!searchQuery.trim()) return;
     
     toast({
-      title: "Product Search",
+      title: "Search Results",
       description: `Searching for: "${searchQuery}"`,
       duration: 3000,
     });
-  };
-
-  const handleOrderClick = (orderId: string) => {
-    toast({
-      title: "Order Details",
-      description: `Viewing order ${orderId}`,
-      duration: 3000,
-    });
-    navigate(`/vendor/orders/${orderId}`);
-  };
-
-  const handleProductClick = (productId: number) => {
-    toast({
-      title: "Product Details",
-      description: `Viewing product #${productId}`,
-      duration: 3000,
-    });
-    navigate(`/vendor/products/${productId}`);
+    // In a real app, this would filter the content
   };
 
   const handleAddProduct = () => {
-    setIsEditMode(false);
+    toast({
+      title: "Product Added",
+      description: `${productName} has been added to your inventory.`,
+      duration: 3000,
+    });
+    setAddProductDialogOpen(false);
+    // Reset form fields
+    setProductName('');
+    setProductPrice('');
+    setProductStock('');
     setProductCategory('');
-    setProductSubCategory('');
-    setProductUnit('');
-    setOfferDiscount(false);
-    setDiscountPercentage(0);
-    setDiscountStartDate(undefined);
-    setDiscountEndDate(undefined);
-    setProductImage(null);
+    setProductDescription('');
+    setProductImages([]);
     setProductVideo(null);
-    setProductOpen(true);
+    setProductFeatured(false);
   };
 
   const handleEditProduct = (product: any) => {
     setSelectedProduct(product);
-    setIsEditMode(true);
-    setProductCategory('electronics');
-    setProductSubCategory('audio');
-    setProductUnit('piece');
-    setOfferDiscount(false);
-    setDiscountPercentage(0);
-    setDiscountStartDate(undefined);
-    setDiscountEndDate(undefined);
-    setProductOpen(true);
+    setProductName(product.name);
+    setProductPrice(product.price.toString());
+    setProductStock(product.stock.toString());
+    setProductCategory(product.category);
+    setProductDescription('Sample description for ' + product.name);
+    setProductFeatured(false);
+    setEditProductDialogOpen(true);
   };
 
-  const handleAddProductSubmit = () => {
-    const action = isEditMode ? "updated" : "added";
-    
+  const handleUpdateProduct = () => {
     toast({
-      title: `Product ${action}`,
-      description: `Product has been ${action} to your inventory.`,
+      title: "Product Updated",
+      description: `${productName} has been updated.`,
       duration: 3000,
     });
-    setProductOpen(false);
+    setEditProductDialogOpen(false);
   };
 
-  const handleSetMoq = (product: any) => {
+  const handleDeleteProduct = (product: any) => {
     setSelectedProduct(product);
-    setCurrentMoq(product.moq);
-    setMoqDialogOpen(true);
+    setDeleteDialogOpen(true);
   };
 
-  const handleMoqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      setCurrentMoq(value);
-    }
-  };
-
-  const handleMoqSubmit = () => {
+  const confirmDeleteProduct = () => {
     toast({
-      title: "MOQ Updated",
-      description: `${selectedProduct.name} now has a minimum order quantity of ${currentMoq}.`,
+      title: "Product Deleted",
+      description: `${selectedProduct.name} has been removed from your inventory.`,
       duration: 3000,
     });
-    setMoqDialogOpen(false);
+    setDeleteDialogOpen(false);
   };
 
-  const handleRestock = (product: any) => {
-    toast({
-      title: "Restock Initiated",
-      description: `Restocking ${product.name}`,
-      duration: 3000,
-    });
-  };
-
-  const handleFilterClick = (filterType: string) => {
-    toast({
-      title: "Filter Applied",
-      description: `Products now filtered by: ${filterType}`,
-      duration: 3000,
-    });
-  };
-
-  const handlePendingOrderClick = (order: any) => {
-    setSelectedOrder(order);
-    setOrderActionDialog(true);
-  };
-
-  const handleOrderAction = (action: 'accept' | 'decline') => {
-    if (action === 'accept') {
-      toast({
-        title: "Order Accepted",
-        description: `Order ${selectedOrder.id} has been accepted.`,
-        duration: 3000,
-      });
-    } else {
-      toast({
-        title: "Order Declined",
-        description: `Order ${selectedOrder.id} has been declined. Customer and admin have been notified.`,
-        duration: 3000,
-      });
-    }
-    setOrderActionDialog(false);
-    setDeclineReason('');
-  };
-
-  const handleTaskbarClick = (tab: string) => {
-    setActiveTab(tab);
-    
-    switch (tab) {
-      case 'analytics':
-        toast({
-          title: "Analytics",
-          description: "Viewing sales analytics and reports",
-          duration: 3000,
-        });
-        break;
-      case 'orders':
-        toast({
-          title: "Orders",
-          description: "Managing your customer orders",
-          duration: 3000,
-        });
-        navigate('/vendor/orders');
-        break;
-      case 'stock':
-        toast({
-          title: "Stock Management",
-          description: "Managing your product inventory",
-          duration: 3000,
-        });
-        navigate('/vendor/products');
-        break;
-      case 'finances':
-        toast({
-          title: "Finances",
-          description: "Viewing financial reports and statements",
-          duration: 3000,
-        });
-        navigate('/vendor/finances');
-        break;
-      case 'account':
-        toast({
-          title: "Account Settings",
-          description: "Managing your vendor account",
-          duration: 3000,
-        });
-        navigate('/vendor/account');
-        break;
-      default:
-        break;
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setProductImages(filesArray);
     }
   };
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    type: 'image' | 'video'
-  ) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      if (type === 'image') {
-        setProductImage(file);
-        setViewImagePreview(URL.createObjectURL(file));
-      } else {
-        setProductVideo(file);
-      }
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProductVideo(e.target.files[0]);
     }
-  };
-
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const category = e.target.value;
-    setProductCategory(category);
-    setProductSubCategory('');
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return renderDashboard();
-      default:
-        return renderDashboard();
-    }
-  };
-
-  const renderDashboard = () => {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-wholesale-100 p-3 rounded-full">
-                <DollarSign className="h-6 w-6 text-wholesale-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-                <h3 className="text-2xl font-bold text-gray-900">{formatKES(124563.82)}</h3>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-green-100 p-3 rounded-full">
-                <ShoppingBag className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                <h3 className="text-2xl font-bold text-gray-900">1,243</h3>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <PackageCheck className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Products</p>
-                <h3 className="text-2xl font-bold text-gray-900">156</h3>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Customers</p>
-                <h3 className="text-2xl font-bold text-gray-900">287</h3>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-yellow-700 flex items-center">
-              <AlertTriangle className="mr-2 h-5 w-5" />
-              Pending Orders
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-yellow-200">
-                    <th className="text-left py-3 px-4 text-yellow-700">Order ID</th>
-                    <th className="text-left py-3 px-4 text-yellow-700">Customer</th>
-                    <th className="text-right py-3 px-4 text-yellow-700">Items</th>
-                    <th className="text-right py-3 px-4 text-yellow-700">Total</th>
-                    <th className="text-right py-3 px-4 text-yellow-700">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-yellow-200 hover:bg-yellow-100">
-                      <td 
-                        className="py-3 px-4 text-yellow-700 cursor-pointer hover:text-yellow-900"
-                      >
-                        {order.id}
-                      </td>
-                      <td className="py-3 px-4">{order.customer}</td>
-                      <td className="py-3 px-4 text-right">{order.items}</td>
-                      <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="border-green-500 text-green-500 hover:bg-green-100"
-                            onClick={() => handlePendingOrderClick(order)}
-                          >
-                            Review
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sales Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-center justify-center">
-                <p className="text-gray-500">Chart showing sales trends would go here</p>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <TrendingUp className="h-6 w-6 text-green-500 mr-2" />
-                    <span className="text-sm font-medium">This Month</span>
-                  </div>
-                  <p className="text-2xl font-bold mt-2">{formatKES(24512.65)}</p>
-                  <p className="text-sm text-green-600 mt-1">+18.2% from last month</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <TrendingDown className="h-6 w-6 text-yellow-500 mr-2" />
-                    <span className="text-sm font-medium">Last Month</span>
-                  </div>
-                  <p className="text-2xl font-bold mt-2">{formatKES(20739.13)}</p>
-                  <p className="text-sm text-yellow-600 mt-1">-5.4% from previous</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">Order ID</th>
-                      <th className="text-left py-3 px-4">Customer</th>
-                      <th className="text-left py-3 px-4">Status</th>
-                      <th className="text-right py-3 px-4">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order) => (
-                      <tr 
-                        key={order.id} 
-                        className="border-b hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleOrderClick(order.id)}
-                      >
-                        <td className="py-3 px-4 text-wholesale-600">
-                          {order.id}
-                        </td>
-                        <td className="py-3 px-4">{order.customer}</td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4 text-center">
-                <Link to="/vendor/orders" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
-                  View All Orders
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Top Selling Products</CardTitle>
-              <Button 
-                className="bg-wholesale-600 hover:bg-wholesale-700" 
-                onClick={handleAddProduct}
-              >
-                <Plus size={16} className="mr-2" /> Add New Product
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Product Name</th>
-                    <th className="text-center py-3 px-4">MOQ</th>
-                    <th className="text-right py-3 px-4">Units Sold</th>
-                    <th className="text-right py-3 px-4">Revenue</th>
-                    <th className="text-right py-3 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topProducts.map((product) => (
-                    <tr 
-                      key={product.id} 
-                      className="border-b hover:bg-gray-50"
-                    >
-                      <td 
-                        className="py-3 px-4 text-gray-900 hover:text-wholesale-600 cursor-pointer"
-                        onClick={() => handleProductClick(product.id)}
-                      >
-                        {product.name}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center">
-                          <span>{product.moq}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSetMoq(product);
-                            }}
-                            className="ml-2 h-6 w-6 p-0"
-                          >
-                            <Edit size={14} className="text-gray-500 hover:text-wholesale-600" />
-                          </Button>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right">{product.sold}</td>
-                      <td className="py-3 px-4 text-right">{formatKES(product.revenue)}</td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditProduct(product);
-                            }}
-                          >
-                            <Edit className="h-4 w-4 text-wholesale-600" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={() => handleProductClick(product.id)}
-                          >
-                            <ChevronRight className="h-5 w-5 text-wholesale-600" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 text-center">
-              <Link to="/vendor/products" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
-                View All Products
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-red-700">Low Stock Alert</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-red-200">
-                    <th className="text-left py-3 px-4 text-red-700">Product Name</th>
-                    <th className="text-right py-3 px-4 text-red-700">Current Stock</th>
-                    <th className="text-right py-3 px-4 text-red-700">Min. Stock</th>
-                    <th className="text-right py-3 px-4 text-red-700">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lowStockProducts.map((product) => (
-                    <tr key={product.id} className="border-b border-red-200 hover:bg-red-100">
-                      <td 
-                        className="py-3 px-4 text-red-700 cursor-pointer hover:text-red-900"
-                        onClick={() => handleProductClick(product.id)}
-                      >
-                        {product.name}
-                      </td>
-                      <td className="py-3 px-4 text-right text-red-700">{product.stock}</td>
-                      <td className="py-3 px-4 text-right text-red-700">{product.minStock}</td>
-                      <td className="py-3 px-4 text-right">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="border-red-500 text-red-500 hover:bg-red-100"
-                          onClick={() => handleRestock(product)}
-                        >
-                          Restock
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
   };
 
   return (
@@ -636,506 +182,832 @@ const VendorDashboard: React.FC = () => {
           <div className="flex items-center justify-center">
             <Button 
               variant="ghost" 
-              size="icon"
-              onClick={() => setNotificationsOpen(true)}
-              className="relative mr-3"
+              onClick={() => setAddProductDialogOpen(true)}
+              className="flex items-center space-x-1"
             >
-              <Bell className="h-5 w-5" />
-              {notifications.some(n => !n.read) && (
-                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-600"></span>
-              )}
-            </Button>
-            <Button 
-              className="bg-wholesale-600 hover:bg-wholesale-700" 
-              onClick={handleAddProduct}
-            >
-              <Plus size={16} className="mr-2" /> Add New Product
+              <Plus className="mr-1 h-4 w-4" />
+              <span>Add New Product</span>
             </Button>
           </div>
         </div>
 
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          <Button
-            variant={activeTab === 'dashboard' ? 'default' : 'outline'}
-            className={`${activeTab === 'dashboard' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
-            onClick={() => handleTaskbarClick('dashboard')}
-          >
-            <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
-          </Button>
-          <Button
-            variant={activeTab === 'analytics' ? 'default' : 'outline'}
-            className={`${activeTab === 'analytics' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
-            onClick={() => handleTaskbarClick('analytics')}
-          >
-            <ChartBar className="h-4 w-4 mr-2" /> Analytics
-          </Button>
-          <Button
-            variant={activeTab === 'orders' ? 'default' : 'outline'}
-            className={`${activeTab === 'orders' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
-            onClick={() => handleTaskbarClick('orders')}
-          >
-            <ShoppingBag className="h-4 w-4 mr-2" /> Orders
-          </Button>
-          <Button
-            variant={activeTab === 'stock' ? 'default' : 'outline'}
-            className={`${activeTab === 'stock' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
-            onClick={() => handleTaskbarClick('stock')}
-          >
-            <Package className="h-4 w-4 mr-2" /> Stock
-          </Button>
-          <Button
-            variant={activeTab === 'finances' ? 'default' : 'outline'}
-            className={`${activeTab === 'finances' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
-            onClick={() => handleTaskbarClick('finances')}
-          >
-            <Wallet className="h-4 w-4 mr-2" /> Finances
-          </Button>
-          <Button
-            variant={activeTab === 'account' ? 'default' : 'outline'}
-            className={`${activeTab === 'account' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
-            onClick={() => handleTaskbarClick('account')}
-          >
-            <User className="h-4 w-4 mr-2" /> Account
-          </Button>
+        {/* Command Buttons - Fixed for visibility and made scrollable */}
+        <div className="relative z-30 mb-6">
+          <ScrollArea className="w-full whitespace-nowrap pb-3">
+            <div className="flex space-x-2 p-1">
+              <Button
+                variant={activeView === 'dashboard' ? 'default' : 'outline'}
+                size="sm"
+                className="flex items-center"
+                onClick={() => setActiveView('dashboard')}
+              >
+                <LayoutDashboard className="mr-1 h-4 w-4" />
+                Dashboard
+              </Button>
+              <Button
+                variant={activeView === 'products' ? 'default' : 'outline'}
+                size="sm"
+                className="flex items-center"
+                onClick={() => setActiveView('products')}
+              >
+                <Package className="mr-1 h-4 w-4" />
+                Products
+              </Button>
+              <Button
+                variant={activeView === 'orders' ? 'default' : 'outline'}
+                size="sm"
+                className="flex items-center"
+                onClick={() => setActiveView('orders')}
+              >
+                <ShoppingBag className="mr-1 h-4 w-4" />
+                Orders
+              </Button>
+              <Button
+                variant={activeView === 'analytics' ? 'default' : 'outline'}
+                size="sm"
+                className="flex items-center"
+                onClick={() => setActiveView('analytics')}
+              >
+                <ChartBar className="mr-1 h-4 w-4" />
+                Analytics
+              </Button>
+              <Button
+                variant={activeView === 'finances' ? 'default' : 'outline'}
+                size="sm"
+                className="flex items-center"
+                onClick={() => setActiveView('finances')}
+              >
+                <Wallet className="mr-1 h-4 w-4" />
+                Finances
+              </Button>
+              <Button
+                variant={activeView === 'customers' ? 'default' : 'outline'}
+                size="sm"
+                className="flex items-center"
+                onClick={() => setActiveView('customers')}
+              >
+                <User className="mr-1 h-4 w-4" />
+                Customers
+              </Button>
+            </div>
+          </ScrollArea>
         </div>
 
-        {renderContent()}
+        {/* Dashboard View */}
+        {activeView === 'dashboard' && (
+          <div className="space-y-6">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="flex items-center p-6">
+                  <div className="bg-cheki-100 p-3 rounded-full">
+                    <Wallet className="h-6 w-6 text-cheki-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Total Revenue</p>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {formatKES(revenueStats.totalRevenue)}
+                    </h3>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="flex items-center p-6">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <ShoppingBag className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Total Orders</p>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {revenueStats.totalOrders.toLocaleString()}
+                    </h3>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="flex items-center p-6">
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <Package className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Products</p>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {revenueStats.totalProducts.toLocaleString()}
+                    </h3>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="flex items-center p-6">
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <Wallet className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Pending Payouts</p>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {formatKES(revenueStats.pendingPayouts)}
+                    </h3>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Recent Orders */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Order ID</th>
+                        <th className="text-left py-3 px-4">Customer</th>
+                        <th className="text-left py-3 px-4">Date</th>
+                        <th className="text-right py-3 px-4">Total</th>
+                        <th className="text-center py-3 px-4">Status</th>
+                        <th className="text-right py-3 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentOrders.map((order) => (
+                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">{order.id}</td>
+                          <td className="py-3 px-4">{order.customer}</td>
+                          <td className="py-3 px-4">{order.date}</td>
+                          <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                              order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button variant="ghost" size="sm">
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4 text-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveView('orders')}
+                  >
+                    View All Orders
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Order Graph */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center">
+                  <p className="text-gray-500">Chart showing order trends would go here</p>
+                </div>
+                <div className="mt-4 grid grid-cols-6 gap-2">
+                  {ordersByMonth.map((data) => (
+                    <div key={data.month} className="flex flex-col items-center">
+                      <div 
+                        className="bg-cheki-100 w-full" 
+                        style={{ height: `${data.orders}px` }}
+                      ></div>
+                      <span className="text-xs mt-1">{data.month}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-        <Dialog open={productOpen} onOpenChange={setProductOpen}>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+        {/* Products View */}
+        {activeView === 'products' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Products</h2>
+              <div className="flex space-x-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Input 
+                    placeholder="Search products..." 
+                    className="pl-10 w-64" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSearch();
+                    }}
+                  />
+                </div>
+                <Button onClick={handleSearch}>Search</Button>
+                <Button 
+                  onClick={() => setAddProductDialogOpen(true)}
+                  className="bg-cheki-600 hover:bg-cheki-700"
+                >
+                  <Plus size={16} className="mr-2" /> Add Product
+                </Button>
+              </div>
+            </div>
+            
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Product Name</th>
+                        <th className="text-right py-3 px-4">Price</th>
+                        <th className="text-right py-3 px-4">Stock</th>
+                        <th className="text-left py-3 px-4">Category</th>
+                        <th className="text-center py-3 px-4">Status</th>
+                        <th className="text-right py-3 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((product) => (
+                        <tr key={product.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">{product.name}</td>
+                          <td className="py-3 px-4 text-right">{formatKES(product.price)}</td>
+                          <td className="py-3 px-4 text-right">{product.stock}</td>
+                          <td className="py-3 px-4">{product.category}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              product.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                              product.status === 'Low Stock' ? 'bg-yellow-100 text-yellow-800' : 
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {product.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex justify-end space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleEditProduct(product)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50"
+                                onClick={() => handleDeleteProduct(product)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Orders View */}
+        {activeView === 'orders' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Orders</h2>
+              <div className="flex space-x-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Input 
+                    placeholder="Search orders..." 
+                    className="pl-10 w-64" 
+                  />
+                </div>
+                <Button>Search</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">Filter</Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>All Orders</DropdownMenuItem>
+                    <DropdownMenuItem>Processing</DropdownMenuItem>
+                    <DropdownMenuItem>Shipped</DropdownMenuItem>
+                    <DropdownMenuItem>Delivered</DropdownMenuItem>
+                    <DropdownMenuItem>Cancelled</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Order ID</th>
+                        <th className="text-left py-3 px-4">Customer</th>
+                        <th className="text-left py-3 px-4">Date</th>
+                        <th className="text-right py-3 px-4">Total</th>
+                        <th className="text-center py-3 px-4">Status</th>
+                        <th className="text-right py-3 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: 10 }, (_, i) => ({
+                        id: `ORD-${1234 + i}`,
+                        customer: `Customer ${i + 1}`,
+                        date: `2023-04-${12 - i}`,
+                        total: 5000 + (i * 1000),
+                        status: i % 3 === 0 ? 'Processing' : i % 3 === 1 ? 'Shipped' : 'Delivered'
+                      })).map((order) => (
+                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">{order.id}</td>
+                          <td className="py-3 px-4">{order.customer}</td>
+                          <td className="py-3 px-4">{order.date}</td>
+                          <td className="py-3 px-4 text-right">{formatKES(order.total)}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                              order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button variant="ghost" size="sm">
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Analytics View */}
+        {activeView === 'analytics' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Analytics</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sales Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-center justify-center">
+                    <p className="text-gray-500">Sales chart would go here</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Products</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {products.slice(0, 5).map((product, index) => (
+                      <div key={product.id} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                            {index + 1}
+                          </div>
+                          <span>{product.name}</span>
+                        </div>
+                        <span>{formatKES(product.price * (10 - index))}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Finances View */}
+        {activeView === 'finances' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Finances</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                  <div className="bg-green-100 p-3 rounded-full mb-4">
+                    <Wallet className="h-6 w-6 text-green-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-500">Available Balance</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatKES(revenueStats.totalRevenue - revenueStats.pendingPayouts)}
+                  </h3>
+                  <Button className="mt-4 w-full">Withdraw Funds</Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                  <div className="bg-blue-100 p-3 rounded-full mb-4">
+                    <Wallet className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-500">Pending Payouts</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatKES(revenueStats.pendingPayouts)}
+                  </h3>
+                  <Button variant="outline" className="mt-4 w-full">View Details</Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                  <div className="bg-purple-100 p-3 rounded-full mb-4">
+                    <Wallet className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-500">Total Revenue</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatKES(revenueStats.totalRevenue)}
+                  </h3>
+                  <Button variant="outline" className="mt-4 w-full">View Reports</Button>
+                </CardContent>
+              </Card>
+            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaction History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Transaction ID</th>
+                        <th className="text-left py-3 px-4">Date</th>
+                        <th className="text-left py-3 px-4">Description</th>
+                        <th className="text-right py-3 px-4">Amount</th>
+                        <th className="text-center py-3 px-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: 5 }, (_, i) => ({
+                        id: `TRX-${10001 + i}`,
+                        date: `2023-04-${12 - i}`,
+                        description: i % 2 === 0 ? 'Order Payment' : 'Withdrawal',
+                        amount: i % 2 === 0 ? 15000 + (i * 1000) : -(8000 + (i * 500)),
+                        status: i % 3 === 0 ? 'Pending' : 'Completed'
+                      })).map((transaction) => (
+                        <tr key={transaction.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">{transaction.id}</td>
+                          <td className="py-3 px-4">{transaction.date}</td>
+                          <td className="py-3 px-4">{transaction.description}</td>
+                          <td className={`py-3 px-4 text-right ${
+                            transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {formatKES(Math.abs(transaction.amount))}
+                            {transaction.amount > 0 ? ' +' : ' -'}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              transaction.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Customers View */}
+        {activeView === 'customers' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Customers</h2>
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Customer</th>
+                        <th className="text-left py-3 px-4">Email</th>
+                        <th className="text-right py-3 px-4">Orders</th>
+                        <th className="text-right py-3 px-4">Total Spent</th>
+                        <th className="text-center py-3 px-4">Last Order</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: 10 }, (_, i) => ({
+                        id: i + 1,
+                        name: `Customer ${i + 1}`,
+                        email: `customer${i + 1}@example.com`,
+                        orders: Math.floor(Math.random() * 10) + 1,
+                        spent: Math.floor(Math.random() * 50000) + 5000,
+                        lastOrder: `2023-04-${12 - (i % 10)}`
+                      })).map((customer) => (
+                        <tr key={customer.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">{customer.name}</td>
+                          <td className="py-3 px-4">{customer.email}</td>
+                          <td className="py-3 px-4 text-right">{customer.orders}</td>
+                          <td className="py-3 px-4 text-right">{formatKES(customer.spent)}</td>
+                          <td className="py-3 px-4 text-center">{customer.lastOrder}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Add Product Dialog */}
+        <Dialog open={addProductDialogOpen} onOpenChange={setAddProductDialogOpen}>
+          <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
-              <DialogTitle>{isEditMode ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+              <DialogTitle>Add New Product</DialogTitle>
               <DialogDescription>
-                {isEditMode 
-                  ? 'Update your product details below.'
-                  : 'Fill in the product details to add it to your inventory.'
-                }
+                Fill in the details below to add a new product to your inventory.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <FormLabel htmlFor="product-name">Product Name</FormLabel>
+                  <label htmlFor="name" className="text-sm font-medium">
+                    Product Name
+                  </label>
                   <Input 
-                    id="product-name" 
-                    defaultValue={isEditMode ? selectedProduct?.name : ''} 
-                    placeholder="Enter product name"
+                    id="name" 
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                    placeholder="Enter product name" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <FormLabel htmlFor="product-sku">SKU</FormLabel>
+                  <label htmlFor="price" className="text-sm font-medium">
+                    Price (KES)
+                  </label>
                   <Input 
-                    id="product-sku" 
-                    defaultValue={isEditMode ? 'SKU-' + selectedProduct?.id : 'SKU-'} 
-                    placeholder="Enter product SKU"
+                    id="price" 
+                    type="number"
+                    value={productPrice}
+                    onChange={(e) => setProductPrice(e.target.value)}
+                    placeholder="0.00" 
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <FormLabel htmlFor="product-category">Category</FormLabel>
+                  <label htmlFor="stock" className="text-sm font-medium">
+                    Stock Quantity
+                  </label>
+                  <Input 
+                    id="stock" 
+                    type="number"
+                    value={productStock}
+                    onChange={(e) => setProductStock(e.target.value)}
+                    placeholder="0" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="category" className="text-sm font-medium">
+                    Category
+                  </label>
                   <select 
-                    id="product-category"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="category"
                     value={productCategory}
-                    onChange={handleCategoryChange}
+                    onChange={(e) => setProductCategory(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="" disabled>Select Category</option>
+                    <option value="">Select a category</option>
                     {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
+                      <option key={category.id} value={category.name}>
                         {category.name}
                       </option>
                     ))}
                   </select>
                 </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium">
+                  Description
+                </label>
+                <textarea 
+                  id="description"
+                  value={productDescription}
+                  onChange={(e) => setProductDescription(e.target.value)}
+                  rows={4}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Enter product description"
+                ></textarea>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <FormLabel htmlFor="product-subcategory">Subcategory</FormLabel>
+                  <label className="text-sm font-medium">
+                    Product Images
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
+                    <Image className="h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">
+                      Drag & drop product images here, or click to select files
+                    </p>
+                    <input 
+                      type="file" 
+                      multiple 
+                      className="hidden" 
+                      id="product-images"
+                      onChange={handleImageUpload}
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="mt-2"
+                      onClick={() => document.getElementById('product-images')?.click()}
+                    >
+                      Select Files
+                    </Button>
+                    {productImages.length > 0 && (
+                      <p className="text-sm text-green-600 mt-2">
+                        {productImages.length} {productImages.length === 1 ? 'file' : 'files'} selected
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Product Video (Optional)
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
+                    <FileVideo className="h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">
+                      Upload a video showcasing your product
+                    </p>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      id="product-video"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="mt-2"
+                      onClick={() => document.getElementById('product-video')?.click()}
+                    >
+                      Select Video
+                    </Button>
+                    {productVideo && (
+                      <p className="text-sm text-green-600 mt-2">
+                        {productVideo.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="featured" 
+                  checked={productFeatured}
+                  onCheckedChange={(checked) => setProductFeatured(checked as boolean)}
+                />
+                <label
+                  htmlFor="featured"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Feature this product on your store
+                </label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddProductDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddProduct}>
+                Add Product
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Edit Product Dialog */}
+        <Dialog open={editProductDialogOpen} onOpenChange={setEditProductDialogOpen}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle>Edit Product</DialogTitle>
+              <DialogDescription>
+                Update the details for {selectedProduct?.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="edit-name" className="text-sm font-medium">
+                    Product Name
+                  </label>
+                  <Input 
+                    id="edit-name" 
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="edit-price" className="text-sm font-medium">
+                    Price (KES)
+                  </label>
+                  <Input 
+                    id="edit-price" 
+                    type="number"
+                    value={productPrice}
+                    onChange={(e) => setProductPrice(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="edit-stock" className="text-sm font-medium">
+                    Stock Quantity
+                  </label>
+                  <Input 
+                    id="edit-stock" 
+                    type="number"
+                    value={productStock}
+                    onChange={(e) => setProductStock(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="edit-category" className="text-sm font-medium">
+                    Category
+                  </label>
                   <select 
-                    id="product-subcategory"
+                    id="edit-category"
+                    value={productCategory}
+                    onChange={(e) => setProductCategory(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={productSubCategory}
-                    onChange={(e) => setProductSubCategory(e.target.value)}
-                    disabled={!productCategory}
                   >
-                    <option value="" disabled>Select Subcategory</option>
-                    {productCategory && categories.find(c => c.id === productCategory)?.subcategories.map((subCategory) => (
-                      <option key={subCategory.id} value={subCategory.id}>
-                        {subCategory.name}
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.name}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <FormLabel htmlFor="product-price">Unit Price (KES)</FormLabel>
-                  <Input 
-                    id="product-price" 
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    defaultValue={isEditMode ? '1000' : ''}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <FormLabel htmlFor="product-moq">Minimum Order Quantity</FormLabel>
-                  <Input 
-                    id="product-moq" 
-                    type="number"
-                    min="1"
-                    step="1"
-                    defaultValue={isEditMode ? selectedProduct?.moq : '1'}
-                    placeholder="1"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <FormLabel htmlFor="product-stock">Stock Quantity</FormLabel>
-                  <Input 
-                    id="product-stock" 
-                    type="number"
-                    min="0"
-                    defaultValue={isEditMode ? '50' : ''}
-                    placeholder="0"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <FormLabel htmlFor="product-unit">Unit Type</FormLabel>
-                  <select 
-                    id="product-unit"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={productUnit}
-                    onChange={(e) => setProductUnit(e.target.value)}
-                  >
-                    <option value="" disabled>Select Unit</option>
-                    <option value="piece">Piece</option>
-                    <option value="set">Set</option>
-                    <option value="kg">Kilogram (kg)</option>
-                    <option value="g">Gram (g)</option>
-                    <option value="l">Liter (L)</option>
-                    <option value="ml">Milliliter (mL)</option>
-                    <option value="m">Meter (m)</option>
-                    <option value="cm">Centimeter (cm)</option>
-                    <option value="dozen">Dozen</option>
-                    <option value="box">Box</option>
-                  </select>
-                </div>
-              </div>
-
+              
               <div className="space-y-2">
-                <FormLabel htmlFor="product-description">Product Description</FormLabel>
+                <label htmlFor="edit-description" className="text-sm font-medium">
+                  Description
+                </label>
                 <textarea 
-                  id="product-description"
+                  id="edit-description"
+                  value={productDescription}
+                  onChange={(e) => setProductDescription(e.target.value)}
                   rows={4}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  defaultValue={isEditMode ? 'High quality product with excellent durability and performance.' : ''}
-                  placeholder="Describe your product..."
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 ></textarea>
               </div>
-
-              <div className="space-y-2">
-                <FormLabel>Product Images</FormLabel>
-                <div className="flex gap-4">
-                  <div className="border rounded-md p-4 flex flex-col items-center justify-center w-40 h-40 relative">
-                    {viewImagePreview ? (
-                      <>
-                        <img 
-                          src={viewImagePreview} 
-                          alt="Product preview" 
-                          className="object-contain max-h-32"
-                        />
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="absolute top-1 right-1 h-6 w-6 p-0" 
-                          onClick={() => setViewImagePreview(null)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Image className="h-10 w-10 text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">Main Image</p>
-                        <Input 
-                          type="file"
-                          id="product-image"
-                          className="hidden"
-                          onChange={(e) => handleFileChange(e, 'image')}
-                          accept="image/*"
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="mt-2"
-                          onClick={() => document.getElementById('product-image')?.click()}
-                        >
-                          Upload
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                  
-                  <div className="border rounded-md p-4 flex flex-col items-center justify-center w-40 h-40">
-                    <FileVideo className="h-10 w-10 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">Product Video</p>
-                    <Input 
-                      type="file"
-                      id="product-video"
-                      className="hidden"
-                      onChange={(e) => handleFileChange(e, 'video')}
-                      accept="video/*"
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                      onClick={() => document.getElementById('product-video')?.click()}
-                    >
-                      Upload
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="offer-discount"
-                    checked={offerDiscount}
-                    onCheckedChange={(checked) => setOfferDiscount(checked === true)}
-                  />
-                  <label
-                    htmlFor="offer-discount"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Offer Special Discount
-                  </label>
-                </div>
-              </div>
-
-              {offerDiscount && (
-                <div className="grid gap-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="discount-percentage">Discount Percentage (%)</FormLabel>
-                      <Input 
-                        id="discount-percentage"
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={discountPercentage}
-                        onChange={(e) => setDiscountPercentage(Number(e.target.value))}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div></div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="discount-start-date">Start Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            id="discount-start-date"
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal"
-                          >
-                            {discountStartDate ? (
-                              format(discountStartDate, "PPP")
-                            ) : (
-                              <span className="text-muted-foreground">Pick a date</span>
-                            )}
-                            <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarUI
-                            mode="single"
-                            selected={discountStartDate}
-                            onSelect={setDiscountStartDate}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="discount-end-date">End Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            id="discount-end-date"
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal"
-                          >
-                            {discountEndDate ? (
-                              format(discountEndDate, "PPP")
-                            ) : (
-                              <span className="text-muted-foreground">Pick a date</span>
-                            )}
-                            <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarUI
-                            mode="single"
-                            selected={discountEndDate}
-                            onSelect={setDiscountEndDate}
-                            disabled={(date) => 
-                              date < new Date() || 
-                              (discountStartDate ? date < discountStartDate : false)
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setProductOpen(false)}>
+              <Button variant="outline" onClick={() => setEditProductDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAddProductSubmit}>
-                {isEditMode ? 'Update Product' : 'Add Product'}
+              <Button onClick={handleUpdateProduct}>
+                Save Changes
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        <Dialog open={moqDialogOpen} onOpenChange={setMoqDialogOpen}>
+        
+        {/* Delete Product Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Set Minimum Order Quantity</DialogTitle>
+              <DialogTitle>Delete Product</DialogTitle>
               <DialogDescription>
-                Update the minimum order quantity for {selectedProduct?.name}. 
-                Customers will not be able to purchase below this quantity.
+                Are you sure you want to delete {selectedProduct?.name}? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
-              <div className="space-y-2">
-                <FormLabel htmlFor="moq-input">MOQ</FormLabel>
-                <Input 
-                  id="moq-input"
-                  type="number"
-                  min="1"
-                  value={currentMoq}
-                  onChange={handleMoqChange}
-                />
-              </div>
-            </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setMoqDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleMoqSubmit}>Save</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={orderActionDialog} onOpenChange={setOrderActionDialog}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Order {selectedOrder?.id}</DialogTitle>
-              <DialogDescription>
-                Review the order details before accepting or declining.
-              </DialogDescription>
-            </DialogHeader>
-            {selectedOrder && (
-              <div className="py-4">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-500">Customer</div>
-                      <div>{selectedOrder.customer}</div>
-                    </div>
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-500">Order Date</div>
-                      <div>{selectedOrder.date}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-500">Items</div>
-                      <div>{selectedOrder.items} items</div>
-                    </div>
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-500">Total Amount</div>
-                      <div className="font-bold">{formatKES(selectedOrder.total)}</div>
-                    </div>
-                  </div>
-                  <div className="border-t pt-4">
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-500 mb-2">Decline Reason (optional)</div>
-                      <textarea
-                        className="w-full border rounded-md p-2 text-sm"
-                        rows={3}
-                        placeholder="Enter reason for declining the order..."
-                        value={declineReason}
-                        onChange={(e) => setDeclineReason(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <DialogFooter className="flex justify-between">
-              <Button variant="destructive" onClick={() => handleOrderAction('decline')}>
-                <X className="h-4 w-4 mr-2" /> Decline Order
-              </Button>
-              <Button 
-                className="bg-green-600 hover:bg-green-700" 
-                onClick={() => handleOrderAction('accept')}
-              >
-                <Check className="h-4 w-4 mr-2" /> Accept Order
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle>Notifications</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="h-[300px] pr-4">
-              <div className="space-y-4">
-                {notifications.map((notification) => (
-                  <div 
-                    key={notification.id} 
-                    className={`p-3 rounded-lg border ${notification.read ? 'bg-white' : 'bg-blue-50 border-blue-100'}`}
-                  >
-                    <div className="text-sm font-medium">
-                      {notification.message}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {notification.time}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
-                  setNotifications(notifications.map(n => ({ ...n, read: true })));
-                  setNotificationsOpen(false);
-                }}
-                className="w-full"
-              >
-                Mark all as read
+              <Button variant="destructive" onClick={confirmDeleteProduct}>
+                Delete
               </Button>
             </DialogFooter>
           </DialogContent>
