@@ -6,7 +6,7 @@ import {
   ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown, 
   Grid2x2, List, Tag, Home, Tv, Shirt, Heart, Wrench, Book, Carrot, Wine,
   Search, Settings, ArrowDownUp, MapPin, Star, CheckCircle, Filter,
-  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles, Truck, User
+  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles, Truck, User, X
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { categories, Category } from '@/data/categories';
