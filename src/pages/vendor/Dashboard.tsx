@@ -7,7 +7,7 @@ import {
   Search, ChartBar, LayoutDashboard, Package, Wallet, User, Bell, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { formatKES } from '@/utils/currency';
@@ -45,8 +45,8 @@ import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useNavigate } from 'react-router-dom';
 
-// Mock data for the vendor dashboard
 const revenueStats = {
   totalRevenue: 1245678.45,
   pendingPayouts: 234567.89,
@@ -191,14 +191,13 @@ const VendorDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Command Buttons - Fixed for visibility and made scrollable */}
         <div className="relative z-30 mb-6">
-          <ScrollArea className="w-full whitespace-nowrap pb-3">
-            <div className="flex space-x-2 p-1">
+          <ScrollArea orientation="horizontal" className="w-full px-1">
+            <div className="flex space-x-2 pb-3">
               <Button
                 variant={activeView === 'dashboard' ? 'default' : 'outline'}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center shrink-0"
                 onClick={() => setActiveView('dashboard')}
               >
                 <LayoutDashboard className="mr-1 h-4 w-4" />
@@ -207,7 +206,7 @@ const VendorDashboard: React.FC = () => {
               <Button
                 variant={activeView === 'products' ? 'default' : 'outline'}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center shrink-0"
                 onClick={() => setActiveView('products')}
               >
                 <Package className="mr-1 h-4 w-4" />
@@ -216,7 +215,7 @@ const VendorDashboard: React.FC = () => {
               <Button
                 variant={activeView === 'orders' ? 'default' : 'outline'}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center shrink-0"
                 onClick={() => setActiveView('orders')}
               >
                 <ShoppingBag className="mr-1 h-4 w-4" />
@@ -225,7 +224,7 @@ const VendorDashboard: React.FC = () => {
               <Button
                 variant={activeView === 'analytics' ? 'default' : 'outline'}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center shrink-0"
                 onClick={() => setActiveView('analytics')}
               >
                 <ChartBar className="mr-1 h-4 w-4" />
@@ -234,7 +233,7 @@ const VendorDashboard: React.FC = () => {
               <Button
                 variant={activeView === 'finances' ? 'default' : 'outline'}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center shrink-0"
                 onClick={() => setActiveView('finances')}
               >
                 <Wallet className="mr-1 h-4 w-4" />
@@ -243,7 +242,7 @@ const VendorDashboard: React.FC = () => {
               <Button
                 variant={activeView === 'customers' ? 'default' : 'outline'}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center shrink-0"
                 onClick={() => setActiveView('customers')}
               >
                 <User className="mr-1 h-4 w-4" />
@@ -253,10 +252,8 @@ const VendorDashboard: React.FC = () => {
           </ScrollArea>
         </div>
 
-        {/* Dashboard View */}
         {activeView === 'dashboard' && (
           <div className="space-y-6">
-            {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="flex items-center p-6">
@@ -315,7 +312,6 @@ const VendorDashboard: React.FC = () => {
               </Card>
             </div>
             
-            {/* Recent Orders */}
             <Card>
               <CardHeader>
                 <CardTitle>Recent Orders</CardTitle>
@@ -370,7 +366,6 @@ const VendorDashboard: React.FC = () => {
               </CardContent>
             </Card>
             
-            {/* Order Graph */}
             <Card>
               <CardHeader>
                 <CardTitle>Order Trends</CardTitle>
@@ -395,7 +390,6 @@ const VendorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Products View */}
         {activeView === 'products' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -483,7 +477,6 @@ const VendorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Orders View */}
         {activeView === 'orders' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -563,7 +556,6 @@ const VendorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Analytics View */}
         {activeView === 'analytics' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Analytics</h2>
@@ -602,7 +594,6 @@ const VendorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Finances View */}
         {activeView === 'finances' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Finances</h2>
@@ -695,7 +686,6 @@ const VendorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Customers View */}
         {activeView === 'customers' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Customers</h2>
@@ -737,7 +727,6 @@ const VendorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Add Product Dialog */}
         <Dialog open={addProductDialogOpen} onOpenChange={setAddProductDialogOpen}>
           <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
@@ -906,7 +895,6 @@ const VendorDashboard: React.FC = () => {
           </DialogContent>
         </Dialog>
         
-        {/* Edit Product Dialog */}
         <Dialog open={editProductDialogOpen} onOpenChange={setEditProductDialogOpen}>
           <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
@@ -993,7 +981,6 @@ const VendorDashboard: React.FC = () => {
           </DialogContent>
         </Dialog>
         
-        {/* Delete Product Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
