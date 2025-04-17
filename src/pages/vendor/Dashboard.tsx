@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
-  Search, Filter, ArrowDownUp, CalendarIcon, ChartBar,
-  LayoutDashboard, Package, Wallet, User, Bell
+  Search, ChartBar, LayoutDashboard, Package, Wallet, User, Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { formatKES } from '@/utils/currency';
+import { categories } from '@/data/categories';
 import { 
   Dialog, 
   DialogContent, 
@@ -73,58 +73,8 @@ const lowStockProducts = [
   { id: 3, name: 'Bluetooth Speaker', stock: 7, minStock: 10 },
 ];
 
-const productCategories = [
-  { value: "electronics", label: "Electronics" },
-  { value: "clothing", label: "Clothing & Apparel" },
-  { value: "home", label: "Home & Kitchen" },
-  { value: "construction", label: "Construction Materials" },
-  { value: "textiles", label: "Textiles, Fabrics & Yarns" },
-  { value: "health", label: "Health & Beauty" }
-];
-
-const productSubCategories: Record<string, { value: string, label: string }[]> = {
-  electronics: [
-    { value: "smartphones", label: "Smartphones & Accessories" },
-    { value: "computers", label: "Computers & Laptops" },
-    { value: "audio", label: "Audio Equipment" }
-  ],
-  clothing: [
-    { value: "men", label: "Men's Clothing" },
-    { value: "women", label: "Women's Clothing" },
-    { value: "children", label: "Children's Clothing" }
-  ],
-  home: [
-    { value: "furniture", label: "Furniture" },
-    { value: "appliances", label: "Appliances" },
-    { value: "decor", label: "Home Decor" }
-  ],
-  construction: [
-    { value: "sanitary", label: "Sanitary" },
-    { value: "fittings", label: "Fittings & Accessories" },
-    { value: "building", label: "Building Blocks, Sand & Ballast" }
-  ],
-  textiles: [
-    { value: "cloth", label: "Cloth Fabrics, Garments & Accessories" },
-    { value: "yarn", label: "Yarns & Threads" }
-  ],
-  health: [
-    { value: "skincare", label: "Skincare" },
-    { value: "healthcare", label: "Healthcare Products" }
-  ]
-};
-
-const productUnits = [
-  { value: "piece", label: "Piece" },
-  { value: "set", label: "Set" },
-  { value: "kg", label: "Kilogram (kg)" },
-  { value: "g", label: "Gram (g)" },
-  { value: "l", label: "Liter (L)" },
-  { value: "ml", label: "Milliliter (mL)" },
-  { value: "m", label: "Meter (m)" },
-  { value: "cm", label: "Centimeter (cm)" },
-  { value: "dozen", label: "Dozen" },
-  { value: "box", label: "Box" }
-];
+// Using categories from the data/categories file instead of defining them here
+// This ensures consistency between vendor and customer dashboards
 
 const VendorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -368,56 +318,6 @@ const VendorDashboard: React.FC = () => {
   const renderDashboard = () => {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="relative w-full max-w-sm">
-            <Search 
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
-              size={18} 
-            />
-            <Input 
-              placeholder="Search products..." 
-              className="pl-10" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearch();
-              }}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={handleSearch}>
-              Search
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Filter size={16} className="mr-2" /> Filter
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuItem onClick={() => handleFilterClick('Newest First')}>
-                  Newest First
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterClick('Oldest First')}>
-                  Oldest First
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterClick('Price: Low to High')}>
-                  <ArrowDownUp size={16} className="mr-2" /> Price: Low to High
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterClick('Price: High to Low')}>
-                  <ArrowDownUp size={16} className="mr-2 rotate-180" /> Price: High to Low
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterClick('Best Selling')}>
-                  Best Selling
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterClick('Low Stock')}>
-                  Low Stock
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="flex items-center p-6">
@@ -739,18 +639,13 @@ const VendorDashboard: React.FC = () => {
     <DashboardLayout role="vendor" userName="Tech Supplies Inc.">
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center mr-3">
-              <PackageCheck className="h-6 w-6 text-wholesale-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Tech Supplies Inc.</h1>
-          </div>
-          <div className="flex items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
+          <div className="flex items-center justify-center">
             <Button 
               variant="ghost" 
               size="icon"
               onClick={() => setNotificationsOpen(true)}
-              className="relative"
+              className="relative mr-3"
             >
               <Bell className="h-5 w-5" />
               {notifications.some(n => !n.read) && (
@@ -758,7 +653,7 @@ const VendorDashboard: React.FC = () => {
               )}
             </Button>
             <Button 
-              className="bg-wholesale-600 hover:bg-wholesale-700 ml-2" 
+              className="bg-wholesale-600 hover:bg-wholesale-700" 
               onClick={handleAddProduct}
             >
               <Plus size={16} className="mr-2" /> Add New Product
@@ -855,9 +750,9 @@ const VendorDashboard: React.FC = () => {
                     onChange={handleCategoryChange}
                   >
                     <option value="" disabled>Select Category</option>
-                    {productCategories.map((category) => (
-                      <option key={category.value} value={category.value}>
-                        {category.label}
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
@@ -872,9 +767,9 @@ const VendorDashboard: React.FC = () => {
                     disabled={!productCategory}
                   >
                     <option value="" disabled>Select Subcategory</option>
-                    {productCategory && productSubCategories[productCategory]?.map((subCategory) => (
-                      <option key={subCategory.value} value={subCategory.value}>
-                        {subCategory.label}
+                    {productCategory && categories.find(c => c.id === productCategory)?.subcategories.map((subCategory) => (
+                      <option key={subCategory.id} value={subCategory.id}>
+                        {subCategory.name}
                       </option>
                     ))}
                   </select>
@@ -926,11 +821,16 @@ const VendorDashboard: React.FC = () => {
                     onChange={(e) => setProductUnit(e.target.value)}
                   >
                     <option value="" disabled>Select Unit</option>
-                    {productUnits.map((unit) => (
-                      <option key={unit.value} value={unit.value}>
-                        {unit.label}
-                      </option>
-                    ))}
+                    <option value="piece">Piece</option>
+                    <option value="set">Set</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="g">Gram (g)</option>
+                    <option value="l">Liter (L)</option>
+                    <option value="ml">Milliliter (mL)</option>
+                    <option value="m">Meter (m)</option>
+                    <option value="cm">Centimeter (cm)</option>
+                    <option value="dozen">Dozen</option>
+                    <option value="box">Box</option>
                   </select>
                 </div>
               </div>

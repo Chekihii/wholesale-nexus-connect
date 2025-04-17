@@ -62,11 +62,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
           <div className="flex items-center space-x-1">
             {role === 'vendor' && (
-              <div className="mr-6 flex items-center">
-                <div className="flex flex-col items-end mr-3">
-                  <span className="font-bold text-gray-800">{userName}</span>
-                  <span className="text-xs text-gray-500">Vendor Portal</span>
-                </div>
+              <div className="flex items-center">
                 <Avatar className="h-10 w-10 cursor-pointer" onClick={() => setLogoDialogOpen(true)}>
                   {logoPreview ? (
                     <AvatarImage src={logoPreview} />
@@ -90,7 +86,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  <span className="text-sm">{userName}</span>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
@@ -186,4 +184,3 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     </div>
   );
 };
-
