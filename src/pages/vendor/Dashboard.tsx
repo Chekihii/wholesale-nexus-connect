@@ -1,51 +1,11 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
-  Search, ChartBar, LayoutDashboard, Package, Wallet, User, Bell
+  Search, ChartBar, LayoutDashboard, Package, Wallet, User, Bell, Calendar
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
-import { formatKES } from '@/utils/currency';
-import { categories } from '@/data/categories';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const recentOrders = [
   { id: 'ORD-3254', customer: 'Urban Retailers Inc.', date: '2023-04-10', status: 'Processing', total: 3450.99, items: 45 },
@@ -72,9 +32,6 @@ const lowStockProducts = [
   { id: 2, name: 'Designer Sunglasses', stock: 3, minStock: 5 },
   { id: 3, name: 'Bluetooth Speaker', stock: 7, minStock: 10 },
 ];
-
-// Using categories from the data/categories file instead of defining them here
-// This ensures consistency between vendor and customer dashboards
 
 const VendorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -166,7 +123,6 @@ const VendorDashboard: React.FC = () => {
   const handleAddProductSubmit = () => {
     const action = isEditMode ? "updated" : "added";
     
-    // Send email notification to chekihiiii@gmail.com in a real implementation
     toast({
       title: `Product ${action}`,
       description: `Product has been ${action} to your inventory.`,
@@ -231,7 +187,6 @@ const VendorDashboard: React.FC = () => {
         description: `Order ${selectedOrder.id} has been declined. Customer and admin have been notified.`,
         duration: 3000,
       });
-      // Would send email to chekihiiii@gmail.com in a real implementation
     }
     setOrderActionDialog(false);
     setDeclineReason('');
@@ -708,7 +663,6 @@ const VendorDashboard: React.FC = () => {
 
         {renderContent()}
 
-        {/* Add Product Dialog */}
         <Dialog open={productOpen} onOpenChange={setProductOpen}>
           <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -960,7 +914,7 @@ const VendorDashboard: React.FC = () => {
                             ) : (
                               <span className="text-muted-foreground">Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <Calendar className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -989,7 +943,7 @@ const VendorDashboard: React.FC = () => {
                             ) : (
                               <span className="text-muted-foreground">Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <Calendar className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -1021,7 +975,6 @@ const VendorDashboard: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* MOQ Dialog */}
         <Dialog open={moqDialogOpen} onOpenChange={setMoqDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -1052,7 +1005,6 @@ const VendorDashboard: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Order Action Dialog */}
         <Dialog open={orderActionDialog} onOpenChange={setOrderActionDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
@@ -1113,7 +1065,6 @@ const VendorDashboard: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Notifications Dialog */}
         <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
           <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
