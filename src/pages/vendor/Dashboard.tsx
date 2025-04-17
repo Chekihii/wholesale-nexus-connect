@@ -6,6 +6,45 @@ import {
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
   Search, ChartBar, LayoutDashboard, Package, Wallet, User, Bell, Calendar
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link, useNavigate } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import { formatKES } from '@/utils/currency';
+import { categories } from '@/data/categories';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Form,
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from '@/components/ui/form';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const recentOrders = [
   { id: 'ORD-3254', customer: 'Urban Retailers Inc.', date: '2023-04-10', status: 'Processing', total: 3450.99, items: 45 },
@@ -593,8 +632,7 @@ const VendorDashboard: React.FC = () => {
   return (
     <DashboardLayout role="vendor" userName="Tech Supplies Inc.">
       <div className="flex flex-col h-full">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
+        <div className="flex justify-center items-center mb-6">
           <div className="flex items-center justify-center">
             <Button 
               variant="ghost" 
@@ -918,7 +956,7 @@ const VendorDashboard: React.FC = () => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
+                          <CalendarUI
                             mode="single"
                             selected={discountStartDate}
                             onSelect={setDiscountStartDate}
@@ -947,7 +985,7 @@ const VendorDashboard: React.FC = () => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
+                          <CalendarUI
                             mode="single"
                             selected={discountEndDate}
                             onSelect={setDiscountEndDate}
