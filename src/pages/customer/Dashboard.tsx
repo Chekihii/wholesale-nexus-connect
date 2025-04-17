@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import {
   ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown, 
   Grid2x2, List, Tag, Home, Tv, Shirt, Heart, Wrench, Book, Carrot, Wine,
   Search, Settings, ArrowDownUp, MapPin, Star, CheckCircle, Filter,
-  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles
+  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles, Truck
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { categories, Category } from '@/data/categories';
@@ -37,8 +36,16 @@ import { useToast } from '@/components/ui/use-toast';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate, Link } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
-// Temporary mocked data
 const recentOrders = [
   { id: 'ORD-1234', date: '2023-04-10', status: 'Delivered', total: 12459.99 },
   { id: 'ORD-1235', date: '2023-04-05', status: 'Shipped', total: 5685.50 },
@@ -54,7 +61,6 @@ const recentlyViewed = [
   { id: 6, name: 'Office Chair', image: '', price: 12000, minOrder: 2, vendor: 'Office Depot Kenya' },
 ];
 
-// Top Deals data
 const topDeals = [
   { id: 7, name: 'Premium Bluetooth Headphones', image: '', price: 7500, minOrder: 5, vendor: 'Audio Tech Ltd', discount: '20%' },
   { id: 8, name: 'Ergonomic Office Chair', image: '', price: 15000, minOrder: 2, vendor: 'Office Solutions', discount: '15%' },
@@ -62,7 +68,6 @@ const topDeals = [
   { id: 10, name: 'Professional Blender Set', image: '', price: 8500, minOrder: 3, vendor: 'Kitchen Essentials', discount: '10%' },
 ];
 
-// Chart data for monthly spending by category
 const monthlySpendingData = [
   { name: 'Jan', Electronics: 15000, Fashion: 8000, Home: 5000, Beauty: 3000 },
   { name: 'Feb', Electronics: 12000, Fashion: 9500, Home: 4500, Beauty: 2800 },
@@ -98,10 +103,11 @@ const CustomerDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchType, setSearchType] = useState<'products' | 'vendors'>('products');
+  const [orderToTrack, setOrderToTrack] = useState('');
+  const [trackingDetails, setTrackingDetails] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Custom tooltip formatter function
   const CustomTooltip = (props: any) => {
     if (props.active && props.payload && props.payload.length) {
       return <ChartTooltipContent {...props} formatter={(value: number) => formatKES(value)} />;
@@ -138,6 +144,40 @@ const CustomerDashboard: React.FC = () => {
     // In a real app, this would apply the filter
   };
 
+  const handleTrackOrder = () => {
+    if (!orderToTrack.trim()) {
+      toast({
+        title: "Order ID Required",
+        description: "Please enter an order ID to track.",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    const mockTrackingDetails = {
+      orderId: orderToTrack,
+      status: "Shipped",
+      lastUpdate: "2023-04-12",
+      location: "Nairobi Distribution Center",
+      estimatedDelivery: "2023-04-15",
+      steps: [
+        { status: "Order Received", date: "2023-04-05", completed: true },
+        { status: "Processing", date: "2023-04-07", completed: true },
+        { status: "Shipped", date: "2023-04-12", completed: true },
+        { status: "Out for Delivery", date: "Pending", completed: false },
+        { status: "Delivered", date: "Pending", completed: false }
+      ]
+    };
+    
+    setTrackingDetails(mockTrackingDetails);
+    
+    toast({
+      title: "Order Tracked",
+      description: `Retrieved status for order ${orderToTrack}`,
+      duration: 3000,
+    });
+  };
+
   const handleTaskbarClick = (action: string) => {
     switch (action) {
       case 'home':
@@ -167,7 +207,6 @@ const CustomerDashboard: React.FC = () => {
   return (
     <DashboardLayout role="customer" userName="John Retailer">
       <div className="space-y-6">
-        {/* Search and Filter Bar */}
         <div className="flex justify-between items-center">
           <div className="relative w-full max-w-sm">
             <Search 
@@ -249,7 +288,6 @@ const CustomerDashboard: React.FC = () => {
           </div>
         </div>
         
-        {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="flex items-center p-6">
@@ -300,7 +338,6 @@ const CustomerDashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* Categories Section - Now at the top */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900">Browse Categories</h2>
@@ -366,7 +403,6 @@ const CustomerDashboard: React.FC = () => {
           )}
         </div>
         
-        {/* Top Deals */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 flex items-center">
@@ -396,7 +432,6 @@ const CustomerDashboard: React.FC = () => {
           </Carousel>
         </div>
         
-        {/* Recently Viewed Products - Horizontal Scroll */}
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Recently Viewed Products</h2>
           <Carousel className="w-full">
@@ -414,9 +449,7 @@ const CustomerDashboard: React.FC = () => {
           </Carousel>
         </div>
         
-        {/* Recent Orders & Repeat Order */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Orders */}
           <Card>
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>
@@ -464,7 +497,6 @@ const CustomerDashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* Repeat Order Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -499,7 +531,6 @@ const CustomerDashboard: React.FC = () => {
           </Card>
         </div>
         
-        {/* Monthly Spending - Now at the bottom with actual chart */}
         <Card>
           <CardHeader>
             <CardTitle>Monthly Spending</CardTitle>
@@ -551,9 +582,85 @@ const CustomerDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        <div className="flex justify-end">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-wholesale-600 hover:bg-wholesale-700">
+                <Truck className="h-4 w-4 mr-2" /> Track Your Order
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Track Your Order</DialogTitle>
+                <DialogDescription>
+                  Enter your order ID to see its current status and delivery progress.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center gap-4">
+                  <Input
+                    placeholder="Enter Order ID (e.g., ORD-1234)"
+                    value={orderToTrack}
+                    onChange={(e) => setOrderToTrack(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleTrackOrder}>Track</Button>
+                </div>
+                {trackingDetails && (
+                  <div className="border rounded-lg p-4 mt-2">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h4 className="font-bold text-lg">Order #{trackingDetails.orderId}</h4>
+                        <p className="text-gray-500">Last updated: {trackingDetails.lastUpdate}</p>
+                      </div>
+                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {trackingDetails.status}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Current Location</span>
+                        <span className="text-sm font-medium">{trackingDetails.location}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Estimated Delivery</span>
+                        <span className="text-sm font-medium">{trackingDetails.estimatedDelivery}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="relative">
+                      <div className="absolute left-2 inset-y-0 w-0.5 bg-gray-200"></div>
+                      <div className="space-y-6 relative">
+                        {trackingDetails.steps.map((step: any, index: number) => (
+                          <div key={index} className="flex gap-3">
+                            <div className={`w-4 h-4 rounded-full mt-1 ${
+                              step.completed ? 'bg-green-500' : 'bg-gray-300'
+                            }`}></div>
+                            <div className="flex-1">
+                              <p className="font-medium">{step.status}</p>
+                              <p className="text-sm text-gray-500">
+                                {step.date}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <DialogFooter className="sm:justify-start">
+                <DialogTrigger asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogTrigger>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       
-      {/* Fixed Taskbar at the bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 md:hidden z-50">
         <div className="flex justify-around items-center h-16">
           <Button 
