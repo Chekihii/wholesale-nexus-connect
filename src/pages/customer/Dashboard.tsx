@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import {
   ShoppingBag, Package, Clock, Calendar, TrendingUp, TrendingDown, 
   Grid2x2, List, Tag, Home, Tv, Shirt, Heart, Wrench, Book, Carrot, Wine,
   Search, Settings, ArrowDownUp, MapPin, Star, CheckCircle, Filter,
-  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles, Truck
+  ChevronRight, Bell, RefreshCw, Repeat, Flame, Sparkles, Truck, User
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { categories, Category } from '@/data/categories';
@@ -105,6 +106,11 @@ const CustomerDashboard: React.FC = () => {
   const [searchType, setSearchType] = useState<'products' | 'vendors'>('products');
   const [orderToTrack, setOrderToTrack] = useState('');
   const [trackingDetails, setTrackingDetails] = useState<any>(null);
+  const [showCartItems, setShowCartItems] = useState(false);
+  const [cartItems, setCartItems] = useState([
+    { id: 1, name: 'Wireless Earbuds Pro', price: 8999, quantity: 2, image: '' },
+    { id: 2, name: 'Premium Cotton T-Shirt', price: 4550, quantity: 1, image: '' }
+  ]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -121,7 +127,9 @@ const CustomerDashboard: React.FC = () => {
       description: `Adding items from order ${orderId} to your cart.`,
       duration: 3000,
     });
-    // In a real app, this would fetch the order items and add them to cart
+    // Email notification would be sent to chekihiiii@gmail.com in a real implementation
+    // Also notify vendor and admin dashboards
+    setShowCartItems(true);
   };
 
   const handleSearch = () => {
@@ -184,13 +192,15 @@ const CustomerDashboard: React.FC = () => {
         navigate('/');
         break;
       case 'cart':
-        navigate('/cart');
+        setShowCartItems(true);
         break;
       case 'categories':
-        // Toggle category view
+        window.scrollTo({
+          top: document.querySelector('.categories-section')?.getBoundingClientRect().top || 0,
+          behavior: 'smooth'
+        });
         break;
       case 'search':
-        // Focus search input
         const searchInput = document.querySelector('input[placeholder="Search products..."]');
         if (searchInput instanceof HTMLInputElement) {
           searchInput.focus();
@@ -202,6 +212,26 @@ const CustomerDashboard: React.FC = () => {
       default:
         break;
     }
+  };
+
+  const removeFromCart = (itemId: number) => {
+    setCartItems(cartItems.filter(item => item.id !== itemId));
+    toast({
+      title: "Item removed",
+      description: "Item has been removed from your cart",
+      duration: 3000,
+    });
+  };
+
+  const checkoutCart = () => {
+    toast({
+      title: "Proceeding to checkout",
+      description: "Redirecting to checkout page",
+      duration: 3000,
+    });
+    // Would send email to chekihiiii@gmail.com in a real implementation
+    // Would update vendor and admin notifications
+    navigate('/checkout');
   };
 
   return (
@@ -288,57 +318,8 @@ const CustomerDashboard: React.FC = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-wholesale-100 p-3 rounded-full">
-                <ShoppingBag className="h-6 w-6 text-wholesale-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                <h3 className="text-2xl font-bold text-gray-900">24</h3>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-green-100 p-3 rounded-full">
-                <Package className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Active Orders</p>
-                <h3 className="text-2xl font-bold text-gray-900">5</h3>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Clock className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Pending Orders</p>
-                <h3 className="text-2xl font-bold text-gray-900">3</h3>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Calendar className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Spent</p>
-                <h3 className="text-2xl font-bold text-gray-900">{formatKES(152400)}</h3>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
+        {/* Categories Section - Moved to top as requested */}
+        <div className="categories-section">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900">Browse Categories</h2>
           </div>
@@ -392,7 +373,7 @@ const CustomerDashboard: React.FC = () => {
                       </div>
                       <h3 className="text-sm font-medium text-gray-900 text-center">{category.name}</h3>
                       <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <span>{category.subcategories.length} subcategories</span> 
+                        <span>{category.subcategories.length}</span> 
                         <ChevronRight size={14} className="ml-1" />
                       </div>
                     </CardContent>
@@ -401,6 +382,56 @@ const CustomerDashboard: React.FC = () => {
               })}
             </div>
           )}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-wholesale-100 p-3 rounded-full">
+                <ShoppingBag className="h-6 w-6 text-wholesale-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total Orders</p>
+                <h3 className="text-2xl font-bold text-gray-900">24</h3>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-green-100 p-3 rounded-full">
+                <Package className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Active Orders</p>
+                <h3 className="text-2xl font-bold text-gray-900">5</h3>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Pending Orders</p>
+                <h3 className="text-2xl font-bold text-gray-900">3</h3>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="flex items-center p-6">
+              <div className="bg-purple-100 p-3 rounded-full">
+                <Calendar className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total Spent</p>
+                <h3 className="text-2xl font-bold text-gray-900">{formatKES(152400)}</h3>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         
         <div>
@@ -490,9 +521,9 @@ const CustomerDashboard: React.FC = () => {
                 </table>
               </div>
               <div className="mt-4 text-center">
-                <a href="/orders" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
+                <Link to="/orders" className="text-wholesale-600 hover:text-wholesale-700 text-sm font-medium">
                   View All Orders
-                </a>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -511,9 +542,14 @@ const CustomerDashboard: React.FC = () => {
                 {recentOrders.map((order) => (
                   <div key={order.id} className="p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{order.id}</p>
-                        <p className="text-sm text-gray-500">{order.date} • {formatKES(order.total)}</p>
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-gray-200 rounded-md mr-3 flex items-center justify-center">
+                          <Package className="h-6 w-6 text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{order.id}</p>
+                          <p className="text-sm text-gray-500">{order.date} • {formatKES(order.total)}</p>
+                        </div>
                       </div>
                       <Button 
                         size="sm" 
@@ -583,7 +619,11 @@ const CustomerDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end">
+        <div className="flex justify-between">
+          <Button className="bg-wholesale-600 hover:bg-wholesale-700" onClick={() => navigate('/notifications')}>
+            <Bell className="h-4 w-4 mr-2" /> View Notifications
+          </Button>
+          
           <Dialog>
             <DialogTrigger asChild>
               <Button className="bg-wholesale-600 hover:bg-wholesale-700">
@@ -661,6 +701,70 @@ const CustomerDashboard: React.FC = () => {
         </div>
       </div>
       
+      <Dialog open={showCartItems} onOpenChange={setShowCartItems}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Your Cart</DialogTitle>
+            <DialogDescription>
+              Review items in your cart before proceeding to checkout.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {cartItems.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">Your cart is empty</p>
+            ) : (
+              <div className="space-y-4">
+                {cartItems.map(item => (
+                  <div key={item.id} className="flex justify-between items-center border-b pb-2">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-md" />
+                        ) : (
+                          <Package className="h-6 w-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <span>{formatKES(item.price)} × {item.quantity}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-8 w-8 p-0 text-red-500"
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="pt-4 border-t">
+                  <div className="flex justify-between font-medium">
+                    <span>Total</span>
+                    <span>{formatKES(cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCartItems(false)}>
+              Continue Shopping
+            </Button>
+            <Button 
+              onClick={checkoutCart}
+              disabled={cartItems.length === 0}
+              className="bg-wholesale-600 hover:bg-wholesale-700"
+            >
+              Checkout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 md:hidden z-50">
         <div className="flex justify-around items-center h-16">
           <Button 
@@ -700,7 +804,7 @@ const CustomerDashboard: React.FC = () => {
             className="flex flex-col items-center justify-center h-full rounded-none"
             onClick={() => handleTaskbarClick('profile')}
           >
-            <Settings className="h-5 w-5" />
+            <User className="h-5 w-5" />
             <span className="text-xs mt-1">Profile</span>
           </Button>
         </div>

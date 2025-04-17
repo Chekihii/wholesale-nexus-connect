@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
-  Search, Filter, ArrowDownUp, CalendarIcon
+  Search, Filter, ArrowDownUp, CalendarIcon as CalendarIconLucide, ChartBar,
+  LayoutDashboard, Package, Wallet, User, Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -43,6 +44,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const recentOrders = [
   { id: 'ORD-3254', customer: 'Urban Retailers Inc.', date: '2023-04-10', status: 'Processing', total: 3450.99, items: 45 },
@@ -141,10 +143,16 @@ const VendorDashboard: React.FC = () => {
   const [productImage, setProductImage] = useState<File | null>(null);
   const [productVideo, setProductVideo] = useState<File | null>(null);
   const [viewImagePreview, setViewImagePreview] = useState<string | null>(null);
-  
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [orderActionDialog, setOrderActionDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [declineReason, setDeclineReason] = useState('');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, message: "New order received (ORD-3257)", time: "10 minutes ago", read: false },
+    { id: 2, message: "Your product 'Wireless Earbuds Pro' is low in stock", time: "1 hour ago", read: false },
+    { id: 3, message: "Payment confirmed for order ORD-3254", time: "3 hours ago", read: true }
+  ]);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -207,6 +215,7 @@ const VendorDashboard: React.FC = () => {
   const handleAddProductSubmit = () => {
     const action = isEditMode ? "updated" : "added";
     
+    // Send email notification to chekihiiii@gmail.com in a real implementation
     toast({
       title: `Product ${action}`,
       description: `Product has been ${action} to your inventory.`,
@@ -271,9 +280,58 @@ const VendorDashboard: React.FC = () => {
         description: `Order ${selectedOrder.id} has been declined. Customer and admin have been notified.`,
         duration: 3000,
       });
+      // Would send email to chekihiiii@gmail.com in a real implementation
     }
     setOrderActionDialog(false);
     setDeclineReason('');
+  };
+
+  const handleTaskbarClick = (tab: string) => {
+    setActiveTab(tab);
+    
+    switch (tab) {
+      case 'analytics':
+        toast({
+          title: "Analytics",
+          description: "Viewing sales analytics and reports",
+          duration: 3000,
+        });
+        break;
+      case 'orders':
+        toast({
+          title: "Orders",
+          description: "Managing your customer orders",
+          duration: 3000,
+        });
+        navigate('/vendor/orders');
+        break;
+      case 'stock':
+        toast({
+          title: "Stock Management",
+          description: "Managing your product inventory",
+          duration: 3000,
+        });
+        navigate('/vendor/products');
+        break;
+      case 'finances':
+        toast({
+          title: "Finances",
+          description: "Viewing financial reports and statements",
+          duration: 3000,
+        });
+        navigate('/vendor/finances');
+        break;
+      case 'account':
+        toast({
+          title: "Account Settings",
+          description: "Managing your vendor account",
+          duration: 3000,
+        });
+        navigate('/vendor/account');
+        break;
+      default:
+        break;
+    }
   };
 
   const handleFileChange = (
@@ -297,22 +355,24 @@ const VendorDashboard: React.FC = () => {
     setProductSubCategory('');
   };
 
-  return (
-    <DashboardLayout role="vendor" userName="Tech Supplies Inc.">
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return renderDashboard();
+      default:
+        return renderDashboard();
+    }
+  };
+
+  const renderDashboard = () => {
+    return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Vendor Dashboard</h1>
-          <Button 
-            className="bg-wholesale-600 hover:bg-wholesale-700" 
-            onClick={handleAddProduct}
-          >
-            <Plus size={16} className="mr-2" /> Add New Product
-          </Button>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <div className="relative w-full max-w-sm">
+            <Search 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+              size={18} 
+            />
             <Input 
               placeholder="Search products..." 
               className="pl-10" 
@@ -323,36 +383,38 @@ const VendorDashboard: React.FC = () => {
               }}
             />
           </div>
-          <Button onClick={handleSearch}>
-            Search
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Filter size={16} className="mr-2" /> Filter
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuItem onClick={() => handleFilterClick('Newest First')}>
-                Newest First
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterClick('Oldest First')}>
-                Oldest First
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterClick('Price: Low to High')}>
-                <ArrowDownUp size={16} className="mr-2" /> Price: Low to High
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterClick('Price: High to Low')}>
-                <ArrowDownUp size={16} className="mr-2 rotate-180" /> Price: High to Low
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterClick('Best Selling')}>
-                Best Selling
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterClick('Low Stock')}>
-                Low Stock
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleSearch}>
+              Search
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Filter size={16} className="mr-2" /> Filter
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuItem onClick={() => handleFilterClick('Newest First')}>
+                  Newest First
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterClick('Oldest First')}>
+                  Oldest First
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterClick('Price: Low to High')}>
+                  <ArrowDownUp size={16} className="mr-2" /> Price: Low to High
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterClick('Price: High to Low')}>
+                  <ArrowDownUp size={16} className="mr-2 rotate-180" /> Price: High to Low
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterClick('Best Selling')}>
+                  Best Selling
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterClick('Low Stock')}>
+                  Low Stock
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -537,7 +599,15 @@ const VendorDashboard: React.FC = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Top Selling Products</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Top Selling Products</CardTitle>
+              <Button 
+                className="bg-wholesale-600 hover:bg-wholesale-700" 
+                onClick={handleAddProduct}
+              >
+                <Plus size={16} className="mr-2" /> Add New Product
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -661,377 +731,48 @@ const VendorDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+    );
+  };
 
-      <Dialog open={productOpen} onOpenChange={setProductOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{isEditMode ? "Edit Product" : "Add New Product"}</DialogTitle>
-            <DialogDescription>
-              {isEditMode
-                ? "Update product information in your inventory"
-                : "Add a new product to your inventory. Fill in all the required fields."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="name" className="text-right">
-                Name
-              </label>
-              <Input id="name" placeholder="Product name" className="col-span-3" />
+  return (
+    <DashboardLayout role="vendor" userName="Tech Supplies Inc.">
+      <div className="flex flex-col h-full">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center mr-3">
+              <PackageCheck className="h-6 w-6 text-wholesale-600" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="description" className="text-right">
-                Description
-              </label>
-              <Input id="description" placeholder="Product description" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="price" className="text-right">
-                Price
-              </label>
-              <Input id="price" placeholder="0.00" type="number" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="sample-price" className="text-right">
-                Sample Price
-              </label>
-              <Input id="sample-price" placeholder="0.00" type="number" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="stock" className="text-right">
-                Stock
-              </label>
-              <Input id="stock" placeholder="0" type="number" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="moq" className="text-right">
-                MOQ
-              </label>
-              <Input id="moq" placeholder="1" type="number" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="unit" className="text-right">
-                Unit
-              </label>
-              <select 
-                id="unit" 
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
-                value={productUnit}
-                onChange={(e) => setProductUnit(e.target.value)}
-              >
-                <option value="">Select unit...</option>
-                {productUnits.map(unit => (
-                  <option key={unit.value} value={unit.value}>{unit.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="category" className="text-right">
-                Category
-              </label>
-              <select 
-                id="category" 
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
-                value={productCategory}
-                onChange={handleCategoryChange}
-              >
-                <option value="">Select category...</option>
-                {productCategories.map(category => (
-                  <option key={category.value} value={category.value}>{category.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="subcategory" className="text-right">
-                Sub-Category
-              </label>
-              <select 
-                id="subcategory" 
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
-                value={productSubCategory}
-                onChange={(e) => setProductSubCategory(e.target.value)}
-                disabled={!productCategory}
-              >
-                <option value="">Select sub-category...</option>
-                {productCategory && productSubCategories[productCategory]?.map(subcategory => (
-                  <option key={subcategory.value} value={subcategory.value}>{subcategory.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right">
-                Product Image
-              </label>
-              <div className="col-span-3">
-                <div className="flex items-center space-x-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                    onClick={() => document.getElementById('product-image')?.click()}
-                  >
-                    <Image size={16} /> Upload Image
-                  </Button>
-                  <input 
-                    type="file" 
-                    id="product-image" 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, 'image')} 
-                  />
-                  {(productImage || viewImagePreview) && (
-                    <div className="relative">
-                      <img 
-                        src={viewImagePreview || ''} 
-                        alt="Product preview" 
-                        className="h-12 w-12 object-cover rounded-md"
-                      />
-                      <button 
-                        type="button" 
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                        onClick={() => {
-                          setProductImage(null);
-                          setViewImagePreview(null);
-                        }}
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mt-1">Max. file size: 5MB. Formats: JPG, PNG</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right">
-                Product Video
-              </label>
-              <div className="col-span-3">
-                <div className="flex items-center space-x-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                    onClick={() => document.getElementById('product-video')?.click()}
-                  >
-                    <FileVideo size={16} /> Upload Video
-                  </Button>
-                  <input 
-                    type="file" 
-                    id="product-video" 
-                    className="hidden" 
-                    accept="video/*"
-                    onChange={(e) => handleFileChange(e, 'video')} 
-                  />
-                  {productVideo && (
-                    <span className="text-sm text-green-600">
-                      Video selected: {productVideo.name}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mt-1">Max. file size: 30MB. Formats: MP4, MOV</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="text-right">Discount</div>
-              <div className="flex items-center space-x-2 col-span-3">
-                <Checkbox
-                  id="discount"
-                  checked={offerDiscount}
-                  onCheckedChange={(checked) => setOfferDiscount(checked === true)}
-                />
-                <label
-                  htmlFor="discount"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Offer discount on this product
-                </label>
-              </div>
-            </div>
-            {offerDiscount && (
-              <>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label htmlFor="discount-percentage" className="text-right">
-                    Discount %
-                  </label>
-                  <Input 
-                    id="discount-percentage" 
-                    placeholder="0" 
-                    type="number" 
-                    className="col-span-3"
-                    value={discountPercentage || ''}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      if (!isNaN(value) && value >= 0 && value <= 100) {
-                        setDiscountPercentage(value);
-                      }
-                    }}
-                    min="0"
-                    max="100"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label className="text-right">
-                    Start Date
-                  </label>
-                  <div className="col-span-3">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left",
-                            !discountStartDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {discountStartDate ? format(discountStartDate, "PPP") : <span>Pick start date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={discountStartDate}
-                          onSelect={(date) => setDiscountStartDate(date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label className="text-right">
-                    End Date
-                  </label>
-                  <div className="col-span-3">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left",
-                            !discountEndDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {discountEndDate ? format(discountEndDate, "PPP") : <span>Pick end date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={discountEndDate}
-                          onSelect={(date) => setDiscountEndDate(date)}
-                          disabled={(date) => 
-                            discountStartDate ? date < discountStartDate : false
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-              </>
-            )}
+            <h1 className="text-2xl font-bold text-gray-900">Tech Supplies Inc.</h1>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setProductOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddProductSubmit}>
-              {isEditMode ? "Update" : "Add"} Product
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={moqDialogOpen} onOpenChange={setMoqDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Set Minimum Order Quantity</DialogTitle>
-            <DialogDescription>
-              {selectedProduct ? `Update the minimum order quantity for ${selectedProduct.name}` : ''}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="moq-value" className="text-right">
-                MOQ
-              </label>
-              <Input 
-                id="moq-value" 
-                value={currentMoq} 
-                onChange={handleMoqChange}
-                type="number" 
-                min="0"
-                className="col-span-3" 
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMoqDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleMoqSubmit}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={orderActionDialog} onOpenChange={setOrderActionDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Review Order #{selectedOrder?.id}</DialogTitle>
-            <DialogDescription>
-              Review and decide whether to accept or decline this order.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="font-medium">Customer:</div>
-              <div className="col-span-2">{selectedOrder?.customer}</div>
-              
-              <div className="font-medium">Date:</div>
-              <div className="col-span-2">{selectedOrder?.date}</div>
-              
-              <div className="font-medium">Items:</div>
-              <div className="col-span-2">{selectedOrder?.items}</div>
-              
-              <div className="font-medium">Total:</div>
-              <div className="col-span-2">{selectedOrder && formatKES(selectedOrder.total)}</div>
-            </div>
-            
-            <div className="border-t pt-4 mt-2">
-              <div className="font-medium mb-2">If declining, please state reason:</div>
-              <Input
-                placeholder="Reason for declining (optional for acceptance)"
-                value={declineReason}
-                onChange={(e) => setDeclineReason(e.target.value)}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                This information will be shared with the customer and admin.
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="space-x-2">
-            <Button variant="outline" onClick={() => setOrderActionDialog(false)}>
-              Cancel
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setNotificationsOpen(true)}
+              className="relative"
+            >
+              <Bell className="h-5 w-5" />
+              {notifications.some(n => !n.read) && (
+                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-600"></span>
+              )}
             </Button>
             <Button 
-              variant="destructive"
-              onClick={() => handleOrderAction('decline')}
+              className="bg-wholesale-600 hover:bg-wholesale-700 ml-2" 
+              onClick={handleAddProduct}
             >
-              <X className="mr-2 h-4 w-4" /> Decline Order
+              <Plus size={16} className="mr-2" /> Add New Product
             </Button>
-            <Button 
-              onClick={() => handleOrderAction('accept')}
-            >
-              <Check className="mr-2 h-4 w-4" /> Accept Order
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </DashboardLayout>
-  );
-};
+          </div>
+        </div>
 
-export default VendorDashboard;
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <Button
+            variant={activeTab === 'dashboard' ? 'default' : 'outline'}
+            className={`${activeTab === 'dashboard' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
+            onClick={() => handleTaskbarClick('dashboard')}
+          >
+            <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
+          </Button>
+          <Button
+            variant={activeTab === 'analytics' ? 'default' : 'outline'}
+            className={`${activeTab === 'analytics' ? 'bg-wholesale-600 hover:bg-wholesale-

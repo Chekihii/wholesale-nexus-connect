@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Package, Phone } from 'lucide-react';
 import { formatKES } from '@/utils/currency';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Product {
   id: number;
@@ -20,8 +21,19 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { toast } = useToast();
+  
   const handleCallInquiry = () => {
     window.location.href = "tel:+254700938630";
+  };
+
+  const handleAddToCart = () => {
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+      duration: 3000,
+    });
+    // In a real app, this would add the product to cart
   };
 
   return (
@@ -70,6 +82,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <Button 
           size="sm" 
           className="flex-1 bg-wholesale-600 hover:bg-wholesale-700"
+          onClick={handleAddToCart}
         >
           <ShoppingCart className="h-4 w-4 mr-1" /> Add
         </Button>
