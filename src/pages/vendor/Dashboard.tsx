@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
-  Search, Filter, ArrowDownUp, Calendar
+  Search, Filter, ArrowDownUp, CalendarIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -45,7 +44,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-// Temporary mocked data
 const recentOrders = [
   { id: 'ORD-3254', customer: 'Urban Retailers Inc.', date: '2023-04-10', status: 'Processing', total: 3450.99, items: 45 },
   { id: 'ORD-3253', customer: 'Downtown Styles', date: '2023-04-08', status: 'Shipped', total: 1728.50, items: 23 },
@@ -72,7 +70,6 @@ const lowStockProducts = [
   { id: 3, name: 'Bluetooth Speaker', stock: 7, minStock: 10 },
 ];
 
-// Product categories for dropdown
 const productCategories = [
   { value: "electronics", label: "Electronics" },
   { value: "clothing", label: "Clothing & Apparel" },
@@ -82,7 +79,6 @@ const productCategories = [
   { value: "health", label: "Health & Beauty" }
 ];
 
-// Subcategories mapping
 const productSubCategories: Record<string, { value: string, label: string }[]> = {
   electronics: [
     { value: "smartphones", label: "Smartphones & Accessories" },
@@ -114,7 +110,6 @@ const productSubCategories: Record<string, { value: string, label: string }[]> =
   ]
 };
 
-// Units for dropdown
 const productUnits = [
   { value: "piece", label: "Piece" },
   { value: "set", label: "Set" },
@@ -147,7 +142,6 @@ const VendorDashboard: React.FC = () => {
   const [productVideo, setProductVideo] = useState<File | null>(null);
   const [viewImagePreview, setViewImagePreview] = useState<string | null>(null);
   
-  // Order management states
   const [orderActionDialog, setOrderActionDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [declineReason, setDeclineReason] = useState('');
@@ -163,7 +157,6 @@ const VendorDashboard: React.FC = () => {
       description: `Searching for: "${searchQuery}"`,
       duration: 3000,
     });
-    // In a real app, this would filter the products
   };
 
   const handleOrderClick = (orderId: string) => {
@@ -172,7 +165,6 @@ const VendorDashboard: React.FC = () => {
       description: `Viewing order ${orderId}`,
       duration: 3000,
     });
-    // In a real app, this would navigate to the order details page
     navigate(`/vendor/orders/${orderId}`);
   };
 
@@ -182,7 +174,6 @@ const VendorDashboard: React.FC = () => {
       description: `Viewing product #${productId}`,
       duration: 3000,
     });
-    // In a real app, this would navigate to the product details page
     navigate(`/vendor/products/${productId}`);
   };
 
@@ -203,8 +194,7 @@ const VendorDashboard: React.FC = () => {
   const handleEditProduct = (product: any) => {
     setSelectedProduct(product);
     setIsEditMode(true);
-    // In a real app, you would populate form fields with product data
-    setProductCategory('electronics'); // Example values
+    setProductCategory('electronics');
     setProductSubCategory('audio');
     setProductUnit('piece');
     setOfferDiscount(false);
@@ -223,7 +213,6 @@ const VendorDashboard: React.FC = () => {
       duration: 3000,
     });
     setProductOpen(false);
-    // In a real app, this would add the product to the inventory
   };
 
   const handleSetMoq = (product: any) => {
@@ -246,7 +235,6 @@ const VendorDashboard: React.FC = () => {
       duration: 3000,
     });
     setMoqDialogOpen(false);
-    // In a real app, this would update the product's MOQ
   };
 
   const handleRestock = (product: any) => {
@@ -255,7 +243,6 @@ const VendorDashboard: React.FC = () => {
       description: `Restocking ${product.name}`,
       duration: 3000,
     });
-    // In a real app, this would navigate to the restock page
   };
 
   const handleFilterClick = (filterType: string) => {
@@ -264,7 +251,6 @@ const VendorDashboard: React.FC = () => {
       description: `Products now filtered by: ${filterType}`,
       duration: 3000,
     });
-    // In a real app, this would apply the filter
   };
 
   const handlePendingOrderClick = (order: any) => {
@@ -288,7 +274,6 @@ const VendorDashboard: React.FC = () => {
     }
     setOrderActionDialog(false);
     setDeclineReason('');
-    // In a real app, this would update the order status and notify the customer and admin
   };
 
   const handleFileChange = (
@@ -299,7 +284,6 @@ const VendorDashboard: React.FC = () => {
       const file = event.target.files[0];
       if (type === 'image') {
         setProductImage(file);
-        // Create a preview URL for the image
         setViewImagePreview(URL.createObjectURL(file));
       } else {
         setProductVideo(file);
@@ -310,7 +294,7 @@ const VendorDashboard: React.FC = () => {
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const category = e.target.value;
     setProductCategory(category);
-    setProductSubCategory(''); // Reset subcategory when category changes
+    setProductSubCategory('');
   };
 
   return (
@@ -326,7 +310,6 @@ const VendorDashboard: React.FC = () => {
           </Button>
         </div>
         
-        {/* Search bar */}
         <div className="flex items-center space-x-2">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -372,7 +355,6 @@ const VendorDashboard: React.FC = () => {
           </DropdownMenu>
         </div>
         
-        {/* Stats Overview */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="flex items-center p-6">
@@ -423,7 +405,6 @@ const VendorDashboard: React.FC = () => {
           </Card>
         </div>
         
-        {/* Pending Orders */}
         <Card className="border-yellow-200 bg-yellow-50">
           <CardHeader className="pb-2">
             <CardTitle className="text-yellow-700 flex items-center">
@@ -474,7 +455,6 @@ const VendorDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Sales Overview & Recent Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
@@ -505,7 +485,6 @@ const VendorDashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* Recent Orders */}
           <Card>
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>
@@ -556,7 +535,6 @@ const VendorDashboard: React.FC = () => {
           </Card>
         </div>
         
-        {/* Top Products */}
         <Card>
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
@@ -639,7 +617,6 @@ const VendorDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Low Stock Alert */}
         <Card className="border-red-200 bg-red-50">
           <CardHeader className="pb-2">
             <CardTitle className="text-red-700">Low Stock Alert</CardTitle>
@@ -685,7 +662,6 @@ const VendorDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Add/Edit Product Dialog */}
       <Dialog open={productOpen} onOpenChange={setProductOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -908,7 +884,7 @@ const VendorDashboard: React.FC = () => {
                             !discountStartDate && "text-muted-foreground"
                           )}
                         >
-                          <Calendar className="mr-2 h-4 w-4" />
+                          <CalendarIcon className="mr-2 h-4 w-4" />
                           {discountStartDate ? format(discountStartDate, "PPP") : <span>Pick start date</span>}
                         </Button>
                       </PopoverTrigger>
@@ -916,9 +892,8 @@ const VendorDashboard: React.FC = () => {
                         <Calendar
                           mode="single"
                           selected={discountStartDate}
-                          onSelect={setDiscountStartDate}
+                          onSelect={(date) => setDiscountStartDate(date)}
                           initialFocus
-                          className={cn("p-3 pointer-events-auto")}
                         />
                       </PopoverContent>
                     </Popover>
@@ -938,7 +913,7 @@ const VendorDashboard: React.FC = () => {
                             !discountEndDate && "text-muted-foreground"
                           )}
                         >
-                          <Calendar className="mr-2 h-4 w-4" />
+                          <CalendarIcon className="mr-2 h-4 w-4" />
                           {discountEndDate ? format(discountEndDate, "PPP") : <span>Pick end date</span>}
                         </Button>
                       </PopoverTrigger>
@@ -946,12 +921,11 @@ const VendorDashboard: React.FC = () => {
                         <Calendar
                           mode="single"
                           selected={discountEndDate}
-                          onSelect={setDiscountEndDate}
+                          onSelect={(date) => setDiscountEndDate(date)}
                           disabled={(date) => 
                             discountStartDate ? date < discountStartDate : false
                           }
                           initialFocus
-                          className={cn("p-3 pointer-events-auto")}
                         />
                       </PopoverContent>
                     </Popover>
@@ -971,7 +945,6 @@ const VendorDashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Set MOQ Dialog */}
       <Dialog open={moqDialogOpen} onOpenChange={setMoqDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -1004,7 +977,6 @@ const VendorDashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Order Action Dialog */}
       <Dialog open={orderActionDialog} onOpenChange={setOrderActionDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -1063,4 +1035,3 @@ const VendorDashboard: React.FC = () => {
 };
 
 export default VendorDashboard;
-
