@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, DollarSign, PackageCheck, Users, TrendingUp, TrendingDown, 
   ChevronRight, AlertTriangle, Check, X, Edit, Save, Plus, Image, FileVideo,
-  Search, Filter, ArrowDownUp, CalendarIcon as CalendarIconLucide, ChartBar,
+  Search, Filter, ArrowDownUp, CalendarIcon, ChartBar,
   LayoutDashboard, Package, Wallet, User, Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -775,4 +776,484 @@ const VendorDashboard: React.FC = () => {
           </Button>
           <Button
             variant={activeTab === 'analytics' ? 'default' : 'outline'}
-            className={`${activeTab === 'analytics' ? 'bg-wholesale-600 hover:bg-wholesale-
+            className={`${activeTab === 'analytics' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
+            onClick={() => handleTaskbarClick('analytics')}
+          >
+            <ChartBar className="h-4 w-4 mr-2" /> Analytics
+          </Button>
+          <Button
+            variant={activeTab === 'orders' ? 'default' : 'outline'}
+            className={`${activeTab === 'orders' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
+            onClick={() => handleTaskbarClick('orders')}
+          >
+            <ShoppingBag className="h-4 w-4 mr-2" /> Orders
+          </Button>
+          <Button
+            variant={activeTab === 'stock' ? 'default' : 'outline'}
+            className={`${activeTab === 'stock' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
+            onClick={() => handleTaskbarClick('stock')}
+          >
+            <Package className="h-4 w-4 mr-2" /> Stock
+          </Button>
+          <Button
+            variant={activeTab === 'finances' ? 'default' : 'outline'}
+            className={`${activeTab === 'finances' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
+            onClick={() => handleTaskbarClick('finances')}
+          >
+            <Wallet className="h-4 w-4 mr-2" /> Finances
+          </Button>
+          <Button
+            variant={activeTab === 'account' ? 'default' : 'outline'}
+            className={`${activeTab === 'account' ? 'bg-wholesale-600 hover:bg-wholesale-700' : ''}`}
+            onClick={() => handleTaskbarClick('account')}
+          >
+            <User className="h-4 w-4 mr-2" /> Account
+          </Button>
+        </div>
+
+        {renderContent()}
+
+        {/* Add Product Dialog */}
+        <Dialog open={productOpen} onOpenChange={setProductOpen}>
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{isEditMode ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+              <DialogDescription>
+                {isEditMode 
+                  ? 'Update your product details below.'
+                  : 'Fill in the product details to add it to your inventory.'
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-name">Product Name</FormLabel>
+                  <Input 
+                    id="product-name" 
+                    defaultValue={isEditMode ? selectedProduct?.name : ''} 
+                    placeholder="Enter product name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-sku">SKU</FormLabel>
+                  <Input 
+                    id="product-sku" 
+                    defaultValue={isEditMode ? 'SKU-' + selectedProduct?.id : 'SKU-'} 
+                    placeholder="Enter product SKU"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-category">Category</FormLabel>
+                  <select 
+                    id="product-category"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={productCategory}
+                    onChange={handleCategoryChange}
+                  >
+                    <option value="" disabled>Select Category</option>
+                    {productCategories.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-subcategory">Subcategory</FormLabel>
+                  <select 
+                    id="product-subcategory"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={productSubCategory}
+                    onChange={(e) => setProductSubCategory(e.target.value)}
+                    disabled={!productCategory}
+                  >
+                    <option value="" disabled>Select Subcategory</option>
+                    {productCategory && productSubCategories[productCategory]?.map((subCategory) => (
+                      <option key={subCategory.value} value={subCategory.value}>
+                        {subCategory.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-price">Unit Price (KES)</FormLabel>
+                  <Input 
+                    id="product-price" 
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={isEditMode ? '1000' : ''}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-moq">Minimum Order Quantity</FormLabel>
+                  <Input 
+                    id="product-moq" 
+                    type="number"
+                    min="1"
+                    step="1"
+                    defaultValue={isEditMode ? selectedProduct?.moq : '1'}
+                    placeholder="1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-stock">Stock Quantity</FormLabel>
+                  <Input 
+                    id="product-stock" 
+                    type="number"
+                    min="0"
+                    defaultValue={isEditMode ? '50' : ''}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="product-unit">Unit Type</FormLabel>
+                  <select 
+                    id="product-unit"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={productUnit}
+                    onChange={(e) => setProductUnit(e.target.value)}
+                  >
+                    <option value="" disabled>Select Unit</option>
+                    {productUnits.map((unit) => (
+                      <option key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel htmlFor="product-description">Product Description</FormLabel>
+                <textarea 
+                  id="product-description"
+                  rows={4}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  defaultValue={isEditMode ? 'High quality product with excellent durability and performance.' : ''}
+                  placeholder="Describe your product..."
+                ></textarea>
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel>Product Images</FormLabel>
+                <div className="flex gap-4">
+                  <div className="border rounded-md p-4 flex flex-col items-center justify-center w-40 h-40 relative">
+                    {viewImagePreview ? (
+                      <>
+                        <img 
+                          src={viewImagePreview} 
+                          alt="Product preview" 
+                          className="object-contain max-h-32"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="absolute top-1 right-1 h-6 w-6 p-0" 
+                          onClick={() => setViewImagePreview(null)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Image className="h-10 w-10 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Main Image</p>
+                        <Input 
+                          type="file"
+                          id="product-image"
+                          className="hidden"
+                          onChange={(e) => handleFileChange(e, 'image')}
+                          accept="image/*"
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => document.getElementById('product-image')?.click()}
+                        >
+                          Upload
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  
+                  <div className="border rounded-md p-4 flex flex-col items-center justify-center w-40 h-40">
+                    <FileVideo className="h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">Product Video</p>
+                    <Input 
+                      type="file"
+                      id="product-video"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, 'video')}
+                      accept="video/*"
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => document.getElementById('product-video')?.click()}
+                    >
+                      Upload
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="offer-discount"
+                    checked={offerDiscount}
+                    onCheckedChange={(checked) => setOfferDiscount(checked === true)}
+                  />
+                  <label
+                    htmlFor="offer-discount"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Offer Special Discount
+                  </label>
+                </div>
+              </div>
+
+              {offerDiscount && (
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <FormLabel htmlFor="discount-percentage">Discount Percentage (%)</FormLabel>
+                      <Input 
+                        id="discount-percentage"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={discountPercentage}
+                        onChange={(e) => setDiscountPercentage(Number(e.target.value))}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div></div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <FormLabel htmlFor="discount-start-date">Start Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            id="discount-start-date"
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                          >
+                            {discountStartDate ? (
+                              format(discountStartDate, "PPP")
+                            ) : (
+                              <span className="text-muted-foreground">Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={discountStartDate}
+                            onSelect={setDiscountStartDate}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <FormLabel htmlFor="discount-end-date">End Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            id="discount-end-date"
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                          >
+                            {discountEndDate ? (
+                              format(discountEndDate, "PPP")
+                            ) : (
+                              <span className="text-muted-foreground">Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={discountEndDate}
+                            onSelect={setDiscountEndDate}
+                            disabled={(date) => 
+                              date < new Date() || 
+                              (discountStartDate ? date < discountStartDate : false)
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setProductOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddProductSubmit}>
+                {isEditMode ? 'Update Product' : 'Add Product'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* MOQ Dialog */}
+        <Dialog open={moqDialogOpen} onOpenChange={setMoqDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Set Minimum Order Quantity</DialogTitle>
+              <DialogDescription>
+                Update the minimum order quantity for {selectedProduct?.name}. 
+                Customers will not be able to purchase below this quantity.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="space-y-2">
+                <FormLabel htmlFor="moq-input">MOQ</FormLabel>
+                <Input 
+                  id="moq-input"
+                  type="number"
+                  min="1"
+                  value={currentMoq}
+                  onChange={handleMoqChange}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMoqDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleMoqSubmit}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Order Action Dialog */}
+        <Dialog open={orderActionDialog} onOpenChange={setOrderActionDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Order {selectedOrder?.id}</DialogTitle>
+              <DialogDescription>
+                Review the order details before accepting or declining.
+              </DialogDescription>
+            </DialogHeader>
+            {selectedOrder && (
+              <div className="py-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-500">Customer</div>
+                      <div>{selectedOrder.customer}</div>
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-500">Order Date</div>
+                      <div>{selectedOrder.date}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-500">Items</div>
+                      <div>{selectedOrder.items} items</div>
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-500">Total Amount</div>
+                      <div className="font-bold">{formatKES(selectedOrder.total)}</div>
+                    </div>
+                  </div>
+                  <div className="border-t pt-4">
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-500 mb-2">Decline Reason (optional)</div>
+                      <textarea
+                        className="w-full border rounded-md p-2 text-sm"
+                        rows={3}
+                        placeholder="Enter reason for declining the order..."
+                        value={declineReason}
+                        onChange={(e) => setDeclineReason(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <DialogFooter className="flex justify-between">
+              <Button variant="destructive" onClick={() => handleOrderAction('decline')}>
+                <X className="h-4 w-4 mr-2" /> Decline Order
+              </Button>
+              <Button 
+                className="bg-green-600 hover:bg-green-700" 
+                onClick={() => handleOrderAction('accept')}
+              >
+                <Check className="h-4 w-4 mr-2" /> Accept Order
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Notifications Dialog */}
+        <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Notifications</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[300px] pr-4">
+              <div className="space-y-4">
+                {notifications.map((notification) => (
+                  <div 
+                    key={notification.id} 
+                    className={`p-3 rounded-lg border ${notification.read ? 'bg-white' : 'bg-blue-50 border-blue-100'}`}
+                  >
+                    <div className="text-sm font-medium">
+                      {notification.message}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {notification.time}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setNotifications(notifications.map(n => ({ ...n, read: true })));
+                  setNotificationsOpen(false);
+                }}
+                className="w-full"
+              >
+                Mark all as read
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default VendorDashboard;
